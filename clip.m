@@ -31,8 +31,10 @@ function [ vertices, connectivity, ids ] = clip( vertices, connectivity )
     %                 ID.
     
     arguments
-        vertices (:,4) double
-        connectivity = ( 1:size(vertices,1) )'
+        vertices (:,4) { mustBeNonempty, mustBeNumeric, mustBeReal, ...
+            mustBeNonNan, mustBeFinite }
+        connectivity { mustBeNonempty, mustBeInteger, ...
+            mustBe3DorLower } = ( 1 : size( vertices, 1 ) )'
     end
     
     % order = 1 for vertices, 2 for lines, 3 for triangles (faces).
@@ -164,6 +166,8 @@ function [ vertices, connectivity, ids ] = clip( vertices, connectivity )
     
 end
 
+%% Helper functions.
+
 function outcodes = computeCodes( p )
         
     % Use a tolerance to avoid floating point inconsistencies
@@ -177,4 +181,17 @@ function outcodes = computeCodes( p )
     outcodes(:,5,:) = p(:,3,:)+p(:,4,:) < -tol;
     outcodes(:,6,:) = p(:,3,:)-p(:,4,:) > tol;
         
+end
+
+%% Validation functions.
+
+function mustBe3DorLower( a )
+%MUSTBE3DORLOWER throws an error if the size of the 2nd dimension
+% of a is more than 3, i.e., a must represent points, lines, or triangles.
+    if size( a, 2 ) > 3
+        id = "clip:Validators:InvalidPrimitives";
+        msg = "size( x, 2 ) must be <= 3, representing points, " + ...
+            "lines, or triangles.";
+        throwAsCaller( MException( id, msg ) )
+    end
 end
