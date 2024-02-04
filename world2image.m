@@ -50,7 +50,7 @@ function [ vertices, connectivity, ids ] = ...
         (1 - (verticesNdcSpace(:,2) + 1) * 0.5) * (Camera.imageSize(2) - 1);
     % Accounts for 1-based pixel indexing.
     verticesRasterSpace = verticesRasterSpace + 1;
-    % Add the z-coordinate to the vertex. This is used for rasterization
+    % Add the Z-coordinate to the vertex. This is used for rasterization
     % to decide which face is closest to the camera and therefore should
     % be rendered.
     verticesCameraSpace = ...
@@ -62,8 +62,8 @@ end
 %% Validation functions
 
 function mustBe3DorLower( a )
-%MUSTBE3DORLOWER throws an error if the size of the 2nd dimension (width) 
-% of a is more than 3, i.e., a must represent points, lines, or triangles.
+%MUSTBE3DORLOWER throws an error if the size of the 2nd dimension of a is 
+% more than 3, i.e., a must represent points, lines, or triangles.
     if size( a, 2 ) > 3
         id = "world2image:Validators:InvalidPrimitives";
         msg = "size( x, 2 ) must be <= 3, representing points, " + ...

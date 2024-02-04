@@ -1,6 +1,6 @@
 addpath( genpath( pwd ) ), clearvars, close all
 
-PROJECTION_MATRIX = ProjectionMatrix( [ 1.7 0 0 0; 0 1.7 0 0; 0 0 -1 -1; 0 0 -1 0 ] );
+PROJECTION_MATRIX = ProjectionMatrix( deg2rad(61), 1, 0.1 );
 IMAGE_SIZE = [ 300 300 ];
 % IMAGE_SIZE = 100;
 CAMERA_TRANSLATION = [ 0 0 -4 ];
@@ -14,7 +14,8 @@ faces(2:2:end,:) = quads(:,[1 3 4]);
 
 % Set up camera and position object.
 vertices = vertices - [ 0, 0, mean( vertices(:,3) ) ];
-Camera = Camera( PROJECTION_MATRIX, IMAGE_SIZE, CAMERA_TRANSLATION, CAMERA_ROTATION );
+Camera = Camera( PROJECTION_MATRIX, IMAGE_SIZE, ...
+    CAMERA_TRANSLATION, CAMERA_ROTATION );
 
 rotation = rotz( 180 ) * rotx( -135 ) * rotz( 0 ); % -135, 0
 Camera.t = Camera.t * rotation;
@@ -75,7 +76,8 @@ while isgraphics( f )
     rotation = rotx( 2 ) * rotz( 2 );
     Camera.t = Camera.t * rotation;
     Camera.R = Camera.R * rotation;
-    [ verticesImg, facesImg, idsImg ] = world2image( Camera, vertices, faces );
+    [ verticesImg, facesImg, idsImg ] = ...
+        world2image( Camera, vertices, faces );
     [ I, depthMap ] = rasterize( Camera.imageSize, verticesImg, facesImg, idsImg' );
     %
     rays = raycast( Camera, verticesImg(:,1:2) );

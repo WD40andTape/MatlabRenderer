@@ -24,11 +24,11 @@ function [ vertices, connectivity, ids ] = clip( vertices, connectivity )
     %                 removed. If the primitives are triangles, then the
     %                 output may contain additional new triangles created
     %                 in the process.
-    % - ids           References the row indices of the input connectivity
-    %                 matrix. The IDs of deleted primitives will be 
-    %                 removed. The IDs of new triangles created by 
-    %                 splitting existing triangles will share the original 
-    %                 ID.
+    % - ids           Integer column vector which references the row 
+    %                 indices of the input connectivity matrix. The IDs of 
+    %                 deleted primitives will be removed. The IDs of new 
+    %                 triangles created by splitting existing triangles 
+    %                 will share the original ID.
     
     arguments
         vertices (:,4) { mustBeNonempty, mustBeNumeric, mustBeReal, ...
@@ -40,16 +40,18 @@ function [ vertices, connectivity, ids ] = clip( vertices, connectivity )
     % order = 1 for vertices, 2 for lines, 3 for triangles (faces).
     order = size( connectivity, 2 );
     
+    % verticesPerPrimitive is in the format numPrimitives-by-4-by-order.
     verticesPerPrimitive = vertices( connectivity, : )';
     verticesPerPrimitive = reshape( verticesPerPrimitive, 4, [], order );
     verticesPerPrimitive = permute( verticesPerPrimitive, [2 1 3] );
-    % The outcode is 0 if the point is within each of the boundaries, 
-    % [left right bottom top near far], or 1 otherwise.
+    % outcodes is in the format numPrimitives-by-6-by-order. It is false if 
+    % the point is within each of the boundaries, 
+    % [left right bottom top near far], or true otherwise.
     outcodes = computeCodes( verticesPerPrimitive );
     % outside = the primitive is completely outside of the viewing frustum.
     outside = any( all( outcodes, 3 ), 2 );
     % Exclude primitives containing points with zero w, i.e. at infinity
-    outside = outside | any( verticesPerPrimitive(:,4,:)==0, 3 );
+    outside = outside | any( verticesPerPrimitive(:,4,:) == 0, 3 );
     % inside = the primitive is completely within the viewing frustum.
     inside = ~any( outcodes, [2 3] );
     % clipped = part of the primitive *may* be within the viewing frustum.
@@ -57,7 +59,9 @@ function [ vertices, connectivity, ids ] = clip( vertices, connectivity )
     
     % Extract the primitives to be clipped. This duplicates the vertices so
     % that clipping of one primitive doesn't affect the others.
-    clippedIds = find(clipped); % Linear indices of the connectivity matrix.
+    % clippedIds refers to the linear indices of the connectivity matrix.
+    clippedIds = find( clipped );
+    % verticesPerClipped is in the format order-by-4-by-numPrimitives.
     verticesPerClipped = vertices( connectivity( clipped, : )', : )';
     verticesPerClipped = reshape( verticesPerClipped, 4, order, [] );
     verticesPerClipped = permute( verticesPerClipped, [2 1 3] );
@@ -169,10 +173,14 @@ end
 %% Helper functions.
 
 function outcodes = computeCodes( p )
-        
+
+    % p is provided in the format numPrimitives-by-4-by-order.
     % Use a tolerance to avoid floating point inconsistencies
     % at the edges of the image.
     tol = 1e-12;
+    % outcodes is in the format numPrimitives-by-6-by-order. It is false if 
+    % the point is within each of the boundaries, 
+    % [left right bottom top near far], or true otherwise.
     outcodes = true( size(p,1), 6, size(p,3) );
     outcodes(:,1,:) = p(:,1,:)+p(:,4,:) < -tol;
     outcodes(:,2,:) = p(:,1,:)-p(:,4,:) > tol;
