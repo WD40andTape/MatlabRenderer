@@ -3,12 +3,11 @@ classdef ProjectionMatrix < double
     %
     % VALUE
     %   The value of a ProjectionMatrix object is a 4-by-4 projection 
-    %   matrix. By convention, it is row-major and right-handed. Row-major 
+    %   matrix. It is row-major, right-handed, and the camera is aligned 
+    %   along the world coordinate system's negative Z-axis. Row-major 
     %   order means that points are represented by row vectors and 
     %   projected points are given by pre-multiplication, i.e., 
-    %   points * matrix. The camera is aligned along the world coordinate 
-    %   system negative z-axis - the convention used by most 3D 
-    %   applications, including OpenGL.
+    %   points * matrix.
     %
     %   ProjectionMatrix is a subclass of the built-in type double.
     %   A ProjectionMatrix object (obj) therefore functions as if it were a 
