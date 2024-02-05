@@ -370,6 +370,10 @@ classdef Camera < handle
             % have a near-clipping plane, objects closer than which are not 
             % rendered with a projection matrix.
             %
+            arguments
+                obj
+                ax { Camera.mustBeAxes }
+            end
             fovY = 2 * atand( ( obj.projectionMatrix(3,2) + 1 ) / ...
                 obj.projectionMatrix(2,2) );
             set( ax, "DataAspectRatio", [1 1 1], ...
@@ -453,13 +457,30 @@ classdef Camera < handle
             %   x   Scalar of any type. No error is thrown if all elements 
             %       of x are valid graphics parent objects.
             %
-            isAxes = isgraphics( x, "matlab.graphics.axis.Axes" ) || ...
+            isParent = isgraphics( x, "matlab.graphics.axis.Axes" ) || ...
                 isgraphics( x, "matlab.graphics.primitive.Group" ) || ...
                 isgraphics( x, "matlab.graphics.primitive.Transform" );
-            if ~isAxes
+            if ~isParent
                 id = "Camera:Validators:InvalidParent";
                 msg = "Must be handle to a graphics object " + ...
                     "parent which has not been deleted.";
+                throwAsCaller( MException( id, msg ) )
+            end
+        end
+        function mustBeAxes( ax )
+            %MUSTBEAXES Throw error if ax aren't valid Axes objects.
+            %
+            % SYNTAX
+            %   Camera.mustBeAxes( ax )
+            %
+            % INPUTS
+            %   ax   Input of any type. No error is thrown if all elements 
+            %        of ax are valid Axes objects.
+            %
+            if ~all( isgraphics( ax, "matlab.graphics.axis.Axes" ) )
+                id = "Camera:Validators:InvalidAxes";
+                msg = "Must be handle to one or more Axes objects " + ...
+                    "which have not been deleted.";
                 throwAsCaller( MException( id, msg ) )
             end
         end
