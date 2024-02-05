@@ -3,7 +3,7 @@ classdef Camera < matlab.mixin.Copyable
         projectionMatrix (4,4) { mustBeFloat } % Row-major
         imageSize (1,2) { mustBeInteger, mustBePositive } = [100 100] % [width height]
         t (1,3) { mustBeNumeric, mustBeNonNan } = [0 0 0]
-        R (3,3) { mustBeRightHanded } = [1 0 0; 0 -1 0; 0 0 -1] % Row-major
+        R (3,3) { Camera.mustBeRightHanded } = [1 0 0; 0 -1 0; 0 0 -1] % Row-major
         plotHandles (1,1) struct { mustHaveFields( plotHandles, [ "frame", ...
             "fov", "camera" ] ) } = struct( "frame", gobjects, "fov", ...
             gobjects, "camera", gobjects )
@@ -57,7 +57,7 @@ classdef Camera < matlab.mixin.Copyable
         function plotFrame( obj, ax, len )
             arguments
                 obj
-                ax (1,1) { mustBeAxes( ax ) } = gca
+                ax (1,1) { Camera.mustBeAxes( ax ) } = gca
                 len (1,1) { mustBePositive } = 1
             end
             %
@@ -97,7 +97,7 @@ classdef Camera < matlab.mixin.Copyable
         function plotCamera( obj, ax, len )
             arguments
                 obj
-                ax (1,1) { mustBeAxes( ax ) } = gca
+                ax (1,1) { Camera.mustBeAxes( ax ) } = gca
                 len (1,1) { mustBePositive } = 1
             end
             % Camera geometry is from MATLAB's built-in plotCamera.
@@ -128,7 +128,7 @@ classdef Camera < matlab.mixin.Copyable
             % Depends on the seperate function, raycast.
             arguments
                 obj
-                ax (1,1) { mustBeAxes( ax ) } = gca
+                ax (1,1) { Camera.mustBeAxes( ax ) } = gca
                 dist (1,1) { mustBePositive } = 1
             end
             if exist( 'raycast', 'file' ) ~= 2
@@ -187,6 +187,51 @@ classdef Camera < matlab.mixin.Copyable
                      "CameraPosition", obj.t, ...
                      "CameraTarget", obj.t - obj.R(3,:), ...
                      "CameraUpVector", obj.R(2,:) )
+        end
+    end
+
+    methods(Static,Access=private)
+        function mustBeAxes( x )
+            %MUSTBEAXES Throw an error if x is not a valid graphics objects 
+            % parent. X must be an axes, group (hggroup), or transform 
+            % (hgtransform) object, and must not have been deleted (closed, 
+            % cleared, etc).
+            isAxes = isgraphics( x, "matlab.graphics.axis.Axes" ) || ...
+                isgraphics( x, "matlab.graphics.primitive.Group" ) || ...
+                isgraphics( x, "matlab.graphics.primitive.Transform" );
+            if ~isAxes
+                id = "Camera:Validators:InvalidAxes";
+                msg = "Must be handle to a graphics object " + ...
+                    "parent which has not been deleted.";
+                throwAsCaller( MException( id, msg ) )
+            end
+        end
+        function mustBeRightHanded( matrix, tolerance )
+            %MUSTBERIGHTHANDED Throws error if matrix is not right-handed.
+            arguments
+                matrix { mustBeFloat, mustBeNonNan, mustBeReal }
+                tolerance (1,1) { mustBeNumeric, mustBeNonNan } = 1e-4
+            end
+            if any( abs( matrix * matrix' - eye( 3 ) ) >= tolerance )
+                % Matrix is orthonormal if multiplication of itself with 
+                % its transpose gives the identity matrix.
+                id = "Camera:Validators:MatrixNotOrthonormal";
+                msg = sprintf( "Must be orthonormal within " + ...
+                    "tolerance %s. Either the basis vectors (rows) " + ...
+                    "are not perpendicular or they do not have a " + ...
+                    "Euclidean length equal to 1.", string( tolerance ) );
+                throw( MException( id, msg ) )
+            elseif abs( det( matrix ) - 1 ) >= tolerance
+                % Right-handed rotation matrices have a determinant of 1.
+                id = "Camera:Validators:MatrixNotRightHanded";
+                msg = sprintf( "Must be a valid rotation matrix and " + ...
+                    "right-handed within tolerance %s.\nChange the " + ...
+                    "handedness by:\n -\tPermuting 2 rows (basis " + ...
+                    "vectors).\n -\tNegating 1 or 3 rows.\n -\t" + ...
+                    "Performing a reflection through a plane.", ...
+                    string( tolerance ) );
+                throw( MException( id, msg ) )
+            end
         end
     end
 end
