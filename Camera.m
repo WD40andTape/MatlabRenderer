@@ -39,22 +39,22 @@ classdef Camera < matlab.mixin.Copyable
         
         function set.projectionMatrix( obj, projectionMatrix )
             obj.projectionMatrix = projectionMatrix;
-            obj.updatePlots()
+            obj.updateplots()
         end
         function set.imageSize( obj, imageSize )
             obj.imageSize = imageSize;
-            obj.updatePlots()
+            obj.updateplots()
         end
         function set.t( obj, t )
             obj.t = t;
-            obj.updatePlots()
+            obj.updateplots()
         end
         function set.R( obj, R )
             obj.R = R;
-            obj.updatePlots()
+            obj.updateplots()
         end
         
-        function plotFrame( obj, ax, len )
+        function plotframe( obj, ax, len )
             arguments
                 obj
                 ax (1,1) { Camera.mustBeAxes( ax ) } = gca
@@ -94,13 +94,13 @@ classdef Camera < matlab.mixin.Copyable
             set(h(6),"Position",obj.t+zAxis,"String","Z")
         end
         
-        function plotCamera( obj, ax, len )
+        function plotcamera( obj, ax, len )
             arguments
                 obj
                 ax (1,1) { Camera.mustBeAxes( ax ) } = gca
                 len (1,1) { mustBePositive } = 1
             end
-            % Camera geometry is from MATLAB's built-in plotCamera.
+            % Camera geometry is from MATLAB's built-in plotcamera.
             ln = 2/3 * len; % body length
             cu = 1/3 * len; % body side
             ro = cu / 2;       % rim offset
@@ -118,13 +118,13 @@ classdef Camera < matlab.mixin.Copyable
                 h = patch( ax, "Faces", F, "Vertices", V, ...
                     "FaceVertexCData", C, "FaceColor", "flat", ...
                     "FaceLighting", "none" );
-                h.UserData = len; % Used in updatePlots().
+                h.UserData = len; % Used in updateplots().
                 obj.plotHandles.camera = h;
             end
             obj.plotHandles.camera.Vertices = V * obj.R + obj.t;
         end
         
-        function plotFOV( obj, ax, dist )
+        function plotfov( obj, ax, dist )
             % Depends on the seperate function, raycast.
             arguments
                 obj
@@ -132,7 +132,7 @@ classdef Camera < matlab.mixin.Copyable
                 dist (1,1) { mustBePositive } = 1
             end
             if exist( 'raycast', 'file' ) ~= 2
-                warning( "plotFOV depends on the raycast function, " + ...
+                warning( "plotfov depends on the raycast function, " + ...
                     "which was not found on the search path." )
                 return
             end
@@ -147,30 +147,14 @@ classdef Camera < matlab.mixin.Copyable
                 fovFaces = [ 1 2 3; 1 3 4; 1 4 5; 1 5 2 ];
                 h = patch( ax, "Faces", fovFaces, "Vertices", ...
                     fovVertices, "FaceColor", [0 0 0], "FaceAlpha", 0.1 );
-                h.UserData = dist; % Used in updatePlots().
+                h.UserData = dist; % Used in updateplots().
                 obj.plotHandles.fov = h;
             else
                 obj.plotHandles.fov.Vertices = fovVertices;
             end
         end
         
-        function updatePlots( obj )
-            if all( isgraphics( obj.plotHandles.frame ) )
-                h = obj.plotHandles.frame;
-                length = norm( [ h(1).UData, h(1).VData, h(1).WData ] );
-                plotFrame( obj, h(1).Parent, length );
-            end
-            if isgraphics( obj.plotHandles.fov )
-                plotFOV( obj, obj.plotHandles.fov.Parent, ...
-                    obj.plotHandles.fov.UserData );
-            end
-            if isgraphics( obj.plotHandles.camera )
-                plotCamera( obj, obj.plotHandles.frame(1).Parent, ...
-                    obj.plotHandles.camera.UserData );
-            end
-        end
-        
-        function setView( obj, ax )
+        function setview( obj, ax )
             % NOTE: MATLAB's camera will render objects outside of the 
             %   field-of-view (instead this is controlled by axes limits), 
             %   and can only have square pixels. This will lead to slight
@@ -190,22 +174,25 @@ classdef Camera < matlab.mixin.Copyable
         end
     end
 
-    methods(Static,Access=private)
-        function mustBeAxes( x )
-            %MUSTBEAXES Throw an error if x is not a valid graphics objects 
-            % parent. X must be an axes, group (hggroup), or transform 
-            % (hgtransform) object, and must not have been deleted (closed, 
-            % cleared, etc).
-            isAxes = isgraphics( x, "matlab.graphics.axis.Axes" ) || ...
-                isgraphics( x, "matlab.graphics.primitive.Group" ) || ...
-                isgraphics( x, "matlab.graphics.primitive.Transform" );
-            if ~isAxes
-                id = "Camera:Validators:InvalidAxes";
-                msg = "Must be handle to a graphics object " + ...
-                    "parent which has not been deleted.";
-                throwAsCaller( MException( id, msg ) )
+    methods(Access=private)
+        function updateplots( obj )
+            if all( isgraphics( obj.plotHandles.frame ) )
+                h = obj.plotHandles.frame;
+                length = norm( [ h(1).UData, h(1).VData, h(1).WData ] );
+                plotframe( obj, h(1).Parent, length );
+            end
+            if isgraphics( obj.plotHandles.fov )
+                plotfov( obj, obj.plotHandles.fov.Parent, ...
+                    obj.plotHandles.fov.UserData );
+            end
+            if isgraphics( obj.plotHandles.camera )
+                plotcamera( obj, obj.plotHandles.frame(1).Parent, ...
+                    obj.plotHandles.camera.UserData );
             end
         end
+    end
+
+    methods(Static,Access=private)
         function mustBeRightHanded( matrix, tolerance )
             %MUSTBERIGHTHANDED Throws error if matrix is not right-handed.
             arguments
@@ -231,6 +218,21 @@ classdef Camera < matlab.mixin.Copyable
                     "Performing a reflection through a plane.", ...
                     string( tolerance ) );
                 throw( MException( id, msg ) )
+            end
+        end
+        function mustBeAxes( x )
+            %MUSTBEAXES Throw an error if x is not a valid graphics objects 
+            % parent. X must be an axes, group (hggroup), or transform 
+            % (hgtransform) object, and must not have been deleted (closed, 
+            % cleared, etc).
+            isAxes = isgraphics( x, "matlab.graphics.axis.Axes" ) || ...
+                isgraphics( x, "matlab.graphics.primitive.Group" ) || ...
+                isgraphics( x, "matlab.graphics.primitive.Transform" );
+            if ~isAxes
+                id = "Camera:Validators:InvalidAxes";
+                msg = "Must be handle to a graphics object " + ...
+                    "parent which has not been deleted.";
+                throwAsCaller( MException( id, msg ) )
             end
         end
     end

@@ -28,9 +28,9 @@ ax(1) = nexttile( tl );
 h(1) = patch( ax(1), "Faces", faces, "Vertices", vertices, ...
     "CData", 1 : size( faces, 1 ), "FaceColor", "flat", "EdgeColor", "none" );
 material( h(1), "dull" )
-Camera.plotFrame( ax(1), 0.75 )
-Camera.plotCamera( ax(1), 0.75 )
-Camera.plotFOV( ax(1), 4.7 )
+Camera.plotframe( ax(1), 0.75 )
+Camera.plotcamera( ax(1), 0.75 )
+Camera.plotfov( ax(1), 4.7 )
 tRange = [ -norm( CAMERA_TRANSLATION ), norm( CAMERA_TRANSLATION ) ];
 set( ax(1), "DataAspectRatio", [1 1 1], "View", [-37.5 30], ...
     "XLim", tRange, "YLim", tRange, "ZLim", tRange, ...
