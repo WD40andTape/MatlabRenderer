@@ -2,6 +2,7 @@ function [ rays, pixels ] = raycast( Camera, pixels )
 %RAYCAST
 % rays = raycast( Camera, pixels )
 % [ rays, pixels ] = raycast( Camera )
+% pixels = [x y]
 % Pixel coordinates containing NaN return NaN rays. Subpixel coordinates are
 % accepted. Out-of-image pixels, i.e., outside of the camera's field-of-view, are
 % accepted but display a warning.
@@ -15,7 +16,7 @@ function [ rays, pixels ] = raycast( Camera, pixels )
         [ I, J ] = ...
             meshgrid( 1 : Camera.imageSize(1), 1 : Camera.imageSize(2) );
         pixels = [ I(:), J(:) ];
-    elseif any( pixels < 1 | pixels > Camera.imageSize([2 1]), "all" )
+    elseif any( pixels < 1 | pixels > Camera.imageSize, "all" )
         warning( "Out-of-image pixels, i.e., that are " + ...
             "outside of the camera's field-of-view, were provided." )
     end
