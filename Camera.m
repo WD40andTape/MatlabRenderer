@@ -217,29 +217,15 @@ classdef Camera < handle
                 h(3) = quiver3( [], [], [], [], [], [], "Parent", ax, ...
                     "Color", "b" );
                 set( h, "AutoScale", "off", ...
-                    "LineWidth", 2, "MaxHeadSize", 0.4 )
+                    "LineWidth", 2, "MaxHeadSize", 0.4, ...
+                    "UserData", len ) % UserData is used in obj.updateframe
                 h(4) = text( ax, 0, 0, 0, "" );
                 h(5) = text( ax, 0, 0, 0, "" );
                 h(6) = text( ax, 0, 0, 0, "" );
                 set( ax, "NextPlot", holdState ); % Restore the state.
+                obj.updateframe( h )
                 obj.plotHandles.frame = h;
             end
-            xAxis = obj.R(1,:) .* len;
-            yAxis = obj.R(2,:) .* len;
-            zAxis = obj.R(3,:) .* len;
-            % Update positions and labels
-            h = obj.plotHandles.frame;
-            set( h(1:3), "XData", obj.t(1), "YData", obj.t(2), ...
-                "ZData", obj.t(3) )
-            set( h(1), "UData", xAxis(1), "VData", xAxis(2), ...
-                "WData", xAxis(3) )
-            set( h(2), "UData", yAxis(1), "VData", yAxis(2), ...
-                "WData", yAxis(3) )
-            set( h(3), "UData", zAxis(1), "VData", zAxis(2), ...
-                "WData", zAxis(3) )
-            set( h(4), "Position", obj.t + xAxis, "String", "X" )
-            set( h(5), "Position", obj.t + yAxis, "String", "Y" )
-            set( h(6), "Position", obj.t + zAxis, "String", "Z" )
             if nargout > 0
                 varargout{1} = obj.plotHandles.frame;
             end
@@ -267,20 +253,20 @@ classdef Camera < handle
                 ax (1,1) { Camera.mustBeParent( ax ) } = gca
                 len (1,1) { mustBePositive } = 1
             end
-            % Credit to MATLAB's built-in plotcamera for the geometry of 
-            % the mesh representing the camera.
-            l = 2/3 * len; % Length of the camera body.
-            w = 1/3 * len; % Width of the camera body.
-            wo = w / 2; % Width offset between the camera's rim and body.
-            lo = l + w; % Length offset between the camera's rim and body.
-            % The first 4 vertices are for the back of the camera, the next 
-            % 4 are for the front, and the last 4 are for the rim and lens.
-            vertices = [ 0 0 lo; 0 w lo; w w lo; w 0 lo; ...
-                         0 0 w; 0 w w; w 0 w; w w w; ...
-                         -wo -wo 0; w+wo -wo 0; w+wo w+wo 0; -wo w+wo 0 ];
-            % Shift the vertices to center the camera on the origin.
-            vertices = vertices - [ w / 2, w / 2, w * 2 ];
             if ~isgraphics( obj.plotHandles.camera )
+                % Credit to MATLAB's built-in plotcamera for the geometry of 
+                % the mesh representing the camera.
+                l = 2/3 * len; % Length of the camera body.
+                w = 1/3 * len; % Width of the camera body.
+                wo = w / 2; % Width offset between the camera's rim and body.
+                lo = l + w; % Length offset between the camera's rim and body.
+                % The first 4 vertices are for the back of the camera, the next 
+                % 4 are for the front, and the last 4 are for the rim and lens.
+                vertices = [ 0 0 lo; 0 w lo; w w lo; w 0 lo; ...
+                             0 0 w; 0 w w; w 0 w; w w w; ...
+                             -wo -wo 0; w+wo -wo 0; w+wo w+wo 0; -wo w+wo 0 ];
+                % Shift the vertices to center the camera on the origin.
+                vertices = vertices - [ w / 2, w / 2, w * 2 ];
                 % Row 1 defines the back of the camera.
                 % Rows 2-5 define the sides of the camera.
                 % Rows 6-9 define the rim of the camera.
@@ -291,14 +277,13 @@ classdef Camera < handle
                      9 10 11 12];
                 % C sets the camera to black and the lens to yellow.
                 C = [ zeros( size( faces, 1 ) - 1, 3 ); 1 1 0 ];
-                h = patch( ax, "Faces", faces, "Vertices", vertices, ...
+                h = patch( ax, "Faces", faces, "Vertices", [], ...
                     "FaceVertexCData", C, "FaceColor", "flat", ...
                     "FaceLighting", "none" );
-                h.UserData = len; % Used in updateplots().
+                h.UserData = vertices; % Used in obj.updatecamera .
+                obj.updatecamera( h )
                 obj.plotHandles.camera = h;
             end
-            % Rotate the vertices to position the camera's pose.
-            obj.plotHandles.camera.Vertices = vertices * obj.R + obj.t;
             if nargout > 0
                 varargout{1} = obj.plotHandles.camera;
             end
@@ -335,23 +320,13 @@ classdef Camera < handle
                     "which was not found on the search path." )
                 return
             end
-            % Project points from the corners of the image to find the 
-            % edges of the field-of-view.
-            cornerPixels = [ 1 1; obj.imageSize(1) 1; ...
-                           obj.imageSize; 1 obj.imageSize(2) ];
-            edgeRaysNearPlane = raycast( obj, cornerPixels );
-            nearPlaneDist = obj.projectionMatrix(4,3) / ...
-                ( obj.projectionMatrix(3,3) - 1 );
-            edgeRaysFarPlane = edgeRaysNearPlane * dist / nearPlaneDist;
-            vertices = [ obj.t; obj.t + edgeRaysFarPlane ];
             if ~isgraphics( obj.plotHandles.fov )
                 faces = [ 1 2 3; 1 3 4; 1 4 5; 1 5 2 ];
                 h = patch( ax, "Faces", faces, "Vertices", ...
-                    vertices, "FaceColor", [0 0 0], "FaceAlpha", 0.1 );
-                h.UserData = dist; % Used in updateplots().
+                    [], "FaceColor", [0 0 0], "FaceAlpha", 0.1 );
+                h.UserData = dist; % Used in obj.updatefov .
+                obj.updatefov( h )
                 obj.plotHandles.fov = h;
-            else
-                obj.plotHandles.fov.Vertices = vertices;
             end
             if nargout > 0
                 varargout{1} = obj.plotHandles.fov;
@@ -406,18 +381,50 @@ classdef Camera < handle
             % the camera moves.
             %
             if all( isgraphics( obj.plotHandles.frame ) )
-                h = obj.plotHandles.frame;
-                length = norm( [ h(1).UData, h(1).VData, h(1).WData ] );
-                plotframe( obj, h(1).Parent, length );
+                obj.updateframe( obj.plotHandles.frame )
             end
             if isgraphics( obj.plotHandles.fov )
-                plotfov( obj, obj.plotHandles.fov.Parent, ...
-                    obj.plotHandles.fov.UserData );
+                obj.updatefov( obj.plotHandles.fov )
             end
             if isgraphics( obj.plotHandles.camera )
-                plotcamera( obj, obj.plotHandles.frame(1).Parent, ...
-                    obj.plotHandles.camera.UserData );
+                obj.updatecamera( obj.plotHandles.camera )
             end
+        end
+        function updatecamera( obj, h )
+            % Vertices of the default position are stored in UserData.
+            defaultVertices = h.UserData;
+            % Rotate the vertices to position the camera's pose.
+            h.Vertices = defaultVertices * obj.R + obj.t;
+        end
+        function updateframe( obj, h )
+            len = h(1).UserData;
+            xAxis = obj.R(1,:) .* len;
+            yAxis = obj.R(2,:) .* len;
+            zAxis = obj.R(3,:) .* len;
+            % Update positions and labels.
+            set( h(1:3), "XData", obj.t(1), "YData", obj.t(2), ...
+                "ZData", obj.t(3) )
+            set( h(1), "UData", xAxis(1), "VData", xAxis(2), ...
+                "WData", xAxis(3) )
+            set( h(2), "UData", yAxis(1), "VData", yAxis(2), ...
+                "WData", yAxis(3) )
+            set( h(3), "UData", zAxis(1), "VData", zAxis(2), ...
+                "WData", zAxis(3) )
+            set( h(4), "Position", obj.t + xAxis, "String", "X" )
+            set( h(5), "Position", obj.t + yAxis, "String", "Y" )
+            set( h(6), "Position", obj.t + zAxis, "String", "Z" )
+        end
+        function updatefov( obj, h )
+            dist = h.UserData;
+            % Project points from the corners of the image to find the 
+            % edges of the field-of-view.
+            cornerPixels = [ 1 1; obj.imageSize(1) 1; ...
+                           obj.imageSize; 1 obj.imageSize(2) ];
+            edgeRaysNearPlane = raycast( obj, cornerPixels );
+            nearPlaneDist = obj.projectionMatrix(4,3) / ...
+                ( obj.projectionMatrix(3,3) - 1 );
+            edgeRaysFarPlane = edgeRaysNearPlane * dist / nearPlaneDist;
+            h.Vertices = [ obj.t; obj.t + edgeRaysFarPlane ];
         end
     end
 
