@@ -141,6 +141,7 @@ classdef Camera < handle
         
         function delete( obj )
             %DELETE Delete graphics objects on object destruction.
+            %
             fields = fieldnames( obj.plotHandles );
             for i = 1 : numel( fields )
                 delete( obj.plotHandles.(fields{i}) )
@@ -150,29 +151,33 @@ classdef Camera < handle
         function set.projectionMatrix( obj, projectionMatrix )
             % Update the field-of-view plot, if one exists, when the 
             % camera's projection matrix changes, e.g., it zooms in.
+            %
             obj.projectionMatrix = projectionMatrix;
             obj.updateplots()
         end
         function set.imageSize( obj, imageSize )
             % Update the field-of-view plot, if one exists, when the 
             % camera's image resolution changes.
+            %
             obj.imageSize = imageSize;
             obj.updateplots()
         end
         function set.t( obj, t )
             % Update the camera, coordinate frame, and field-of-view plots
             % when the camera translates.
+            %
             obj.t = t;
             obj.updateplots()
         end
         function set.R( obj, R )
             % Update the camera, coordinate frame, and field-of-view plots
             % when the camera rotates.
+            %
             obj.R = R;
             obj.updateplots()
         end
         
-        function h = plotframe( obj, ax, len )
+        function varargout = plotframe( obj, ax, len )
             %PLOTFRAME Plot the camera's Cartesian coordinate system.
             %
             % SYNTAX
@@ -235,9 +240,12 @@ classdef Camera < handle
             set( h(4), "Position", obj.t + xAxis, "String", "X" )
             set( h(5), "Position", obj.t + yAxis, "String", "Y" )
             set( h(6), "Position", obj.t + zAxis, "String", "Z" )
+            if nargout > 0
+                varargout{1} = obj.plotHandles.frame;
+            end
         end
         
-        function h = plotcamera( obj, ax, len )
+        function varargout = plotcamera( obj, ax, len )
             %PLOTCAMERA Plot a mesh representing the camera.
             %
             % SYNTAX
@@ -291,9 +299,12 @@ classdef Camera < handle
             end
             % Rotate the vertices to position the camera's pose.
             obj.plotHandles.camera.Vertices = vertices * obj.R + obj.t;
+            if nargout > 0
+                varargout{1} = obj.plotHandles.camera;
+            end
         end
         
-        function h = plotfov( obj, ax, dist )
+        function varargout = plotfov( obj, ax, dist )
             %PLOTFOV Plot a mesh representing the camera's field-of-view.
             %
             % SYNTAX
@@ -341,6 +352,9 @@ classdef Camera < handle
                 obj.plotHandles.fov = h;
             else
                 obj.plotHandles.fov.Vertices = vertices;
+            end
+            if nargout > 0
+                varargout{1} = obj.plotHandles.fov;
             end
         end
         
@@ -390,6 +404,7 @@ classdef Camera < handle
             %UPDATEPLOTS Update the camera, frame, and field-of-view plots, 
             % if they exist, when the Camera properties change, e.g., if 
             % the camera moves.
+            %
             if all( isgraphics( obj.plotHandles.frame ) )
                 h = obj.plotHandles.frame;
                 length = norm( [ h(1).UData, h(1).VData, h(1).WData ] );
