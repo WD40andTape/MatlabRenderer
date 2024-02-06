@@ -78,18 +78,25 @@ classdef Camera < handle
         % plotHandles - Graphics handles
         %
         % Structure array containing the fields:
-        %  - camera  If plotcamera has not been called, the camera field is 
-        %            empty. Else, it contains a Patch object.
-        %  - frame   If plotframe has not been called, the frame field is 
-        %            empty. Else, it contains a 1-by-6 graphics object 
-        %            array holding 3 Quiver objects and 3 Text objects, in 
-        %            the form [quiverX quiverY quiverZ textX textY textZ].
-        %  - fov     If plotfov has not been called, the fov field is 
-        %            empty. Else, it contains a Patch object.
+        %  - camera  An Nx1 column vector of Patch objects, where N is the 
+        %            number of valid camera graphics objects. If plotcamera 
+        %            has not been called, or if all of the graphics objects 
+        %            have been deleted, then N is 0.
+        %  - frame   An Nx6 graphics object array, where N is the number of
+        %            valid frame graphics. If plotframe has not been 
+        %            called, or if all of the graphics objects have been 
+        %            deleted, then N is 0. Each row of the array references
+        %            a single frame and contains 3 Quiver objects and 3 
+        %            Text objects, in the form 
+        %            [quiverX quiverY quiverZ textX textY textZ].
+        %  - fov     An Nx1 column vector of Patch objects, where N is the 
+        %            number of valid field-of-view graphics objects. If 
+        %            plotfov has not been called, or if all of the graphics 
+        %            objects have been deleted, then N is 0.
         %
         plotHandles (1,1) struct { mustHaveFields( plotHandles, ...
-            [ "camera", "frame", "fov" ] ) } = struct( ...
-            "camera", gobjects, "frame", gobjects, "fov", gobjects )
+            [ "camera", "frame", "fov" ] ) } = struct( "camera", ...
+            gobjects(0,1), "frame", gobjects(0,6), "fov", gobjects(0,1) )
     end
     methods
         function obj = Camera( projectionMatrix, imageSize, t, R )
@@ -200,39 +207,37 @@ classdef Camera < handle
                 ax (1,1) { Camera.mustBeParent( ax ) } = gca
                 len (1,1) { mustBePositive } = 1
             end
-            if ~isgraphics( obj.plotHandles.camera )
-                % Credit to MATLAB's built-in plotcamera for the geometry of 
-                % the mesh representing the camera.
-                l = 2/3 * len; % Length of the camera body.
-                w = 1/3 * len; % Width of the camera body.
-                wo = w / 2; % Width offset between the camera's rim and body.
-                lo = l + w; % Length offset between the camera's rim and body.
-                % The first 4 vertices are for the back of the camera, the next 
-                % 4 are for the front, and the last 4 are for the rim and lens.
-                vertices = [ 0 0 lo; 0 w lo; w w lo; w 0 lo; ...
-                             0 0 w; 0 w w; w 0 w; w w w; ...
-                             -wo -wo 0; w+wo -wo 0; w+wo w+wo 0; -wo w+wo 0 ];
-                % Shift the vertices to center the camera on the origin.
-                vertices = vertices - [ w / 2, w / 2, w * 2 ];
-                % Row 1 defines the back of the camera.
-                % Rows 2-5 define the sides of the camera.
-                % Rows 6-9 define the rim of the camera.
-                % Row 10 defines the lens of the camera.
-                faces = [1 2 3 4; ...
-                     1 5 6 2; 1 5 7 4; 4 7 8 3; 3 8 6 2; ...
-                     5 9 10 7; 7 10 11 8; 8 11 12 6; 6 12 9 5; ...
-                     9 10 11 12];
-                % C sets the camera to black and the lens to yellow.
-                C = [ zeros( size( faces, 1 ) - 1, 3 ); 1 1 0 ];
-                h = patch( ax, "Faces", faces, "Vertices", [], ...
-                    "FaceVertexCData", C, "FaceColor", "flat", ...
-                    "FaceLighting", "none" );
-                h.UserData = vertices; % Used in obj.updatecamera .
-                obj.updatecamera( h )
-                obj.plotHandles.camera = h;
-            end
+            % Credit to MATLAB's built-in plotcamera for the geometry of 
+            % the mesh representing the camera.
+            l = 2/3 * len; % Length of the camera body.
+            w = 1/3 * len; % Width of the camera body.
+            wo = w / 2; % Width offset between the camera's rim and body.
+            lo = l + w; % Length offset between the camera's rim and body.
+            % The first 4 vertices are for the back of the camera, the next 
+            % 4 are for the front, and the last 4 are for the rim and lens.
+            vertices = [ 0 0 lo; 0 w lo; w w lo; w 0 lo; ...
+                         0 0 w; 0 w w; w 0 w; w w w; ...
+                         -wo -wo 0; w+wo -wo 0; w+wo w+wo 0; -wo w+wo 0 ];
+            % Shift the vertices to center the camera on the origin.
+            vertices = vertices - [ w / 2, w / 2, w * 2 ];
+            % Row 1 defines the back of the camera.
+            % Rows 2-5 define the sides of the camera.
+            % Rows 6-9 define the rim of the camera.
+            % Row 10 defines the lens of the camera.
+            faces = [1 2 3 4; ...
+                 1 5 6 2; 1 5 7 4; 4 7 8 3; 3 8 6 2; ...
+                 5 9 10 7; 7 10 11 8; 8 11 12 6; 6 12 9 5; ...
+                 9 10 11 12];
+            % C sets the camera to black and the lens to yellow.
+            C = [ zeros( size( faces, 1 ) - 1, 3 ); 1 1 0 ];
+            h = patch( ax, "Faces", faces, "Vertices", [], ...
+                "FaceVertexCData", C, "FaceColor", "flat", ...
+                "FaceLighting", "none" );
+            h.UserData = vertices; % Used in obj.updatecamera .
+            obj.updatecamera( h )
+            obj.plotHandles.camera = [ obj.plotHandles.camera; h ];
             if nargout > 0
-                varargout{1} = obj.plotHandles.camera;
+                varargout{1} = h;
             end
         end
         
@@ -270,22 +275,20 @@ classdef Camera < handle
                 lengths (3,1) { mustBeNonnegative } = 1
                 labels (3,1) { mustBeText } = { 'X'; 'Y'; 'Z' }
             end
-            %
-            if any( ~isgraphics( obj.plotHandles.frame ) )
-                % Delete the whole frame, in case only part if it is valid.
-                delete( obj.plotHandles.frame )
-                % Intialize graphics objects.
-                initgobjects = @( fun ) arrayfun( @(~) fun( "Parent", ax ), 1:3 );
-                h(1:3) = initgobjects( @matlab.graphics.chart.primitive.Quiver );
-                h(4:6) = initgobjects( @matlab.graphics.primitive.Text );
-                set( h(1:3), "AutoScale", "off", "LineWidth", 2, "MaxHeadSize", 0.4, ...
-                        "UserData", lengths ) % UserData is used in obj.updateframe
-                set( h(4:6), { 'String' }, cellstr( labels ) )
-                obj.updateframe( h )
-                obj.plotHandles.frame = h;
-            end
+            h(1) = matlab.graphics.chart.primitive.Quiver( "Parent", ax );
+            h(2) = matlab.graphics.chart.primitive.Quiver( "Parent", ax );
+            h(3) = matlab.graphics.chart.primitive.Quiver( "Parent", ax );
+            h(4) = matlab.graphics.primitive.Text( "Parent", ax );
+            h(5) = matlab.graphics.primitive.Text( "Parent", ax );
+            h(6) = matlab.graphics.primitive.Text( "Parent", ax );
+            set( h(1:3), ...
+                "AutoScale", "off", "LineWidth", 2, "MaxHeadSize", 0.4, ...
+                "UserData", lengths ) % UserData is used in obj.updateframe
+            set( h(4:6), { 'String' }, cellstr( labels ) )
+            obj.updateframe( h )
+            obj.plotHandles.frame = [ obj.plotHandles.frame; h ];
             if nargout > 0
-                varargout{1} = obj.plotHandles.frame;
+                varargout{1} = h;
             end
         end
         
@@ -321,16 +324,14 @@ classdef Camera < handle
                     "which was not found on the search path." )
                 return
             end
-            if ~isgraphics( obj.plotHandles.fov )
-                faces = [ 1 2 3; 1 3 4; 1 4 5; 1 5 2 ];
-                h = patch( ax, "Faces", faces, "Vertices", ...
-                    [], "FaceColor", [0 0 0], "FaceAlpha", 0.1 );
-                h.UserData = dist; % Used in obj.updatefov .
-                obj.updatefov( h )
-                obj.plotHandles.fov = h;
-            end
+            faces = [ 1 2 3; 1 3 4; 1 4 5; 1 5 2 ];
+            h = patch( ax, "Faces", faces, "Vertices", ...
+                [], "FaceColor", [0 0 0], "FaceAlpha", 0.1 );
+            h.UserData = dist; % Used in obj.updatefov .
+            obj.updatefov( h )
+            obj.plotHandles.fov = [ obj.plotHandles.fov; h ];
             if nargout > 0
-                varargout{1} = obj.plotHandles.fov;
+                varargout{1} = h;
             end
         end
         
@@ -378,21 +379,31 @@ classdef Camera < handle
     methods(Access=private)
         function updateplots( obj )
             %UPDATEPLOTS Update the camera, frame, and field-of-view plots, 
-            % if they exist, when the Camera properties change, e.g., if 
-            % the camera moves.
-            %
-            if isgraphics( obj.plotHandles.camera )
-                obj.updatecamera( obj.plotHandles.camera )
+            % if they exist. Called when the Camera properties change, 
+            % e.g., if the camera moves.
+            
+            % Remove deleted graphics objects from plotHandles property.
+            obj.plotHandles.camera( ...
+                ~isgraphics( obj.plotHandles.camera ) ) = [];
+            obj.plotHandles.fov( ~isgraphics( obj.plotHandles.fov ) ) = [];
+            deletedFrames = ~all( isgraphics( obj.plotHandles.frame ), 2 );
+            % Delete the whole frame if only part of it is valid.
+            delete( obj.plotHandles.frame(deletedFrames,:) )
+            obj.plotHandles.frame(deletedFrames,:) = [];
+
+            % Update each plot.
+            for i = 1 : numel( obj.plotHandles.camera )
+                obj.updatecamera( obj.plotHandles.camera(i) )
             end
-            if all( isgraphics( obj.plotHandles.frame ) )
-                obj.updateframe( obj.plotHandles.frame )
+            for i = 1 : size( obj.plotHandles.frame, 1 )
+                obj.updateframe( obj.plotHandles.frame(i,:) )
             end
-            if isgraphics( obj.plotHandles.fov )
-                obj.updatefov( obj.plotHandles.fov )
+            for i = 1 : numel( obj.plotHandles.fov )
+                obj.updatefov( obj.plotHandles.fov(i) )
             end
         end
         function updatecamera( obj, h )
-            %UPDATECAMERA Update the camera plot.
+            %UPDATECAMERA Update a camera plot.
             %
             % INPUTS
             %   h   Handle to an existing camera graphics object, created 
@@ -404,7 +415,7 @@ classdef Camera < handle
             h.Vertices = defaultVertices * obj.R + obj.t;
         end
         function updateframe( obj, h )
-            %UPDATEFRAME Update the frame plot.
+            %UPDATEFRAME Update a frame plot.
             %
             % INPUTS
             %   h   Handle to an existing frame, created by plotframe. 
@@ -422,7 +433,7 @@ classdef Camera < handle
             set( h(4:6), { 'Position' }, num2cell( textPosition, 2 ) )
         end
         function updatefov( obj, h )
-            %UPDATEFOV Update the field-of-view plot.
+            %UPDATEFOV Update a field-of-view plot.
             %
             % INPUTS
             %   h   Handle to an existing field-of-view graphics 
