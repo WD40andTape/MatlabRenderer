@@ -78,18 +78,18 @@ classdef Camera < handle
         % plotHandles - Graphics handles
         %
         % Structure array containing the fields:
+        %  - camera  If plotcamera has not been called, the camera field is 
+        %            empty. Else, it contains a Patch object.
         %  - frame   If plotframe has not been called, the frame field is 
         %            empty. Else, it contains a 1-by-6 graphics object 
         %            array holding 3 Quiver objects and 3 Text objects, in 
         %            the form [quiverX quiverY quiverZ textX textY textZ].
         %  - fov     If plotfov has not been called, the fov field is 
         %            empty. Else, it contains a Patch object.
-        %  - camera  If plotcamera has not been called, the camera field is 
-        %            empty. Else, it contains a Patch object.
         %
         plotHandles (1,1) struct { mustHaveFields( plotHandles, ...
-            [ "frame", "fov", "camera" ] ) } = struct( ...
-            "frame", gobjects, "fov", gobjects, "camera", gobjects )
+            [ "camera", "frame", "fov" ] ) } = struct( ...
+            "camera", gobjects, "frame", gobjects, "fov", gobjects )
     end
     methods
         function obj = Camera( projectionMatrix, imageSize, t, R )
@@ -177,64 +177,11 @@ classdef Camera < handle
             obj.updateplots()
         end
         
-        function varargout = plotframe( obj, ax, len )
-            %PLOTFRAME Plot the camera's Cartesian coordinate system.
-            %
-            % SYNTAX
-            %   h = obj.plotframe( ax, len )
-            %
-            % INPUTS
-            %   ax    Axes in which to plot. Must be a scalar axes, group 
-            %         (hggroup), or transform (hgtransform) object. The 
-            %         default is the current axes (gca).
-            %   len   Length to plot each arrow (basis) of the coordinate 
-            %         frame. Numeric scalar. The default is 1.
-            %
-            % OUTPUTS
-            %   h     1-by-6 graphics object array containing 3 Quiver 
-            %         objects and 3 Text objects, in the form 
-            %         [quiverX quiverY quiverZ textX textY textZ]. h is 
-            %         also stored in obj.plotHandles.frame .
-            %
-            arguments
-                obj
-                ax (1,1) { Camera.mustBeParent( ax ) } = gca
-                len (1,1) { mustBePositive } = 1
-            end
-            %
-            if any( ~isgraphics( obj.plotHandles.frame ) )
-                if isfield( obj.plotHandles, "frame" )
-                    delete( obj.plotHandles.frame )
-                end
-                % Match the behaviour of patch, used by the other plotting 
-                % functions, in not clearing the axes.
-                holdState = get( ax, "NextPlot" );
-                set( ax, "NextPlot", "add" )
-                h(1) = quiver3( [], [], [], [], [], [], "Parent", ax, ...
-                    "Color", "r" );
-                h(2) = quiver3( [], [], [], [], [], [], "Parent", ax, ...
-                    "Color", "g" );
-                h(3) = quiver3( [], [], [], [], [], [], "Parent", ax, ...
-                    "Color", "b" );
-                set( h, "AutoScale", "off", ...
-                    "LineWidth", 2, "MaxHeadSize", 0.4, ...
-                    "UserData", len ) % UserData is used in obj.updateframe
-                h(4) = text( ax, 0, 0, 0, "" );
-                h(5) = text( ax, 0, 0, 0, "" );
-                h(6) = text( ax, 0, 0, 0, "" );
-                set( ax, "NextPlot", holdState ); % Restore the state.
-                obj.updateframe( h )
-                obj.plotHandles.frame = h;
-            end
-            if nargout > 0
-                varargout{1} = obj.plotHandles.frame;
-            end
-        end
-        
         function varargout = plotcamera( obj, ax, len )
             %PLOTCAMERA Plot a mesh representing the camera.
             %
             % SYNTAX
+            %   h = obj.plotcamera( ax )
             %   h = obj.plotcamera( ax, len )
             %
             % INPUTS
@@ -289,10 +236,64 @@ classdef Camera < handle
             end
         end
         
+        function varargout = plotframe( obj, ax, lengths, labels )
+            %PLOTFRAME Plot the camera's Cartesian coordinate system.
+            % For a more advanced, generalised version of plotframe, see:
+            %  - https://mathworks.com/matlabcentral/fileexchange/156419-plotframe-plot-a-3-d-cartesian-coordinate-system
+            %  - https://github.com/WD40andTape/plotframe/
+            %
+            % SYNTAX
+            %   h = obj.plotframe( ax )
+            %   h = obj.plotframe( ax, lengths )
+            %   h = obj.plotframe( ax, lengths, labels )
+            %
+            % INPUTS
+            %   ax       Axes in which to plot. Must be a scalar axes,  
+            %            group (hggroup), or transform (hgtransform) 
+            %            object. The default is the current axes (gca).
+            %   lengths  Length to plot each arrow (basis) of the coordinate 
+            %            frame. Scalar, 1-by-3, or 3-by-1 numeric vector. 
+            %            The default is 1.
+            %   labels   Text with which to label each basis. Scalar, 
+            %            1-by-3, or 3-by-1 text vector. Set to "" to 
+            %            disable labels. The default is {'X';'Y';'Z'}.
+            %
+            % OUTPUTS
+            %   h        1-by-6 graphics object array containing 3 Quiver 
+            %            objects and 3 Text objects, in the form 
+            %            [quiverX quiverY quiverZ textX textY textZ]. h is 
+            %            also stored in obj.plotHandles.frame .
+            %
+            arguments
+                obj
+                ax (1,1) { Camera.mustBeParent( ax ) } = gca
+                lengths (3,1) { mustBeNonnegative } = 1
+                labels (3,1) { mustBeText } = { 'X'; 'Y'; 'Z' }
+            end
+            %
+            if any( ~isgraphics( obj.plotHandles.frame ) )
+                % Delete the whole frame, in case only part if it is valid.
+                delete( obj.plotHandles.frame )
+                % Intialize graphics objects.
+                initgobjects = @( fun ) arrayfun( @(~) fun( "Parent", ax ), 1:3 );
+                h(1:3) = initgobjects( @matlab.graphics.chart.primitive.Quiver );
+                h(4:6) = initgobjects( @matlab.graphics.primitive.Text );
+                set( h(1:3), "AutoScale", "off", "LineWidth", 2, "MaxHeadSize", 0.4, ...
+                        "UserData", lengths ) % UserData is used in obj.updateframe
+                set( h(4:6), { 'String' }, cellstr( labels ) )
+                obj.updateframe( h )
+                obj.plotHandles.frame = h;
+            end
+            if nargout > 0
+                varargout{1} = obj.plotHandles.frame;
+            end
+        end
+        
         function varargout = plotfov( obj, ax, dist )
             %PLOTFOV Plot a mesh representing the camera's field-of-view.
             %
             % SYNTAX
+            %   h = obj.plotfov( ax )
             %   h = obj.plotfov( ax, dist )
             %
             % INPUTS
@@ -380,41 +381,53 @@ classdef Camera < handle
             % if they exist, when the Camera properties change, e.g., if 
             % the camera moves.
             %
+            if isgraphics( obj.plotHandles.camera )
+                obj.updatecamera( obj.plotHandles.camera )
+            end
             if all( isgraphics( obj.plotHandles.frame ) )
                 obj.updateframe( obj.plotHandles.frame )
             end
             if isgraphics( obj.plotHandles.fov )
                 obj.updatefov( obj.plotHandles.fov )
             end
-            if isgraphics( obj.plotHandles.camera )
-                obj.updatecamera( obj.plotHandles.camera )
-            end
         end
         function updatecamera( obj, h )
+            %UPDATECAMERA Update the camera plot.
+            %
+            % INPUTS
+            %   h   Handle to an existing camera graphics object, created 
+            %       by plotcamera. Scalar Patch object.
+            
             % Vertices of the default position are stored in UserData.
             defaultVertices = h.UserData;
             % Rotate the vertices to position the camera's pose.
             h.Vertices = defaultVertices * obj.R + obj.t;
         end
         function updateframe( obj, h )
-            len = h(1).UserData;
-            xAxis = obj.R(1,:) .* len;
-            yAxis = obj.R(2,:) .* len;
-            zAxis = obj.R(3,:) .* len;
-            % Update positions and labels.
-            set( h(1:3), "XData", obj.t(1), "YData", obj.t(2), ...
-                "ZData", obj.t(3) )
-            set( h(1), "UData", xAxis(1), "VData", xAxis(2), ...
-                "WData", xAxis(3) )
-            set( h(2), "UData", yAxis(1), "VData", yAxis(2), ...
-                "WData", yAxis(3) )
-            set( h(3), "UData", zAxis(1), "VData", zAxis(2), ...
-                "WData", zAxis(3) )
-            set( h(4), "Position", obj.t + xAxis, "String", "X" )
-            set( h(5), "Position", obj.t + yAxis, "String", "Y" )
-            set( h(6), "Position", obj.t + zAxis, "String", "Z" )
+            %UPDATEFRAME Update the frame plot.
+            %
+            % INPUTS
+            %   h   Handle to an existing frame, created by plotframe. 
+            %       1-by-6 graphics object array holding 3 Quiver objects 
+            %       and 3 Text objects, in the form 
+            %       [quiverX quiverY quiverZ textX textY textZ].
+            %
+            basisVectorLengths = h(1:3).UserData;
+            basisVectors = obj.R .* basisVectorLengths;
+            set( h(1:3), ...
+                { 'XData', 'YData', 'ZData' }, num2cell( obj.t ), ...
+                { 'UData', 'VData', 'WData' }, num2cell( basisVectors ), ...
+                { 'Color'                   }, { 'r'; 'g'; 'b' } )
+            textPosition = obj.t + basisVectors;
+            set( h(4:6), { 'Position' }, num2cell( textPosition, 2 ) )
         end
         function updatefov( obj, h )
+            %UPDATEFOV Update the field-of-view plot.
+            %
+            % INPUTS
+            %   h   Handle to an existing field-of-view graphics 
+            %       object, created by plotfov. Scalar Patch object.
+            %
             dist = h.UserData;
             % Project points from the corners of the image to find the 
             % edges of the field-of-view.
