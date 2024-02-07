@@ -1,10 +1,76 @@
 function [ vertices, connectivity, ids ] = ...
         world2image( Camera, vertices, connectivity )
-%WORLD2IMAGE
-%Depends on the seperate function, clip.
+%WORLD2IMAGE Project world points, edges, and faces into image space.
+% 
+% SYNTAX
+%   [ vertices, connectivity, ids ] = world2image( Camera, vertices )
+%   [ vertices, connectivity, ids ] = world2image( __ , connectivity )
+% 
+% INPUTS
+%   Camera        Instance of the provided Camera class, or structure array 
+%                  containing the following fields:
+%                   - projectionMatrix  4-by-4 projection matrix. It must 
+%                                        be row-major and right-handed, 
+%                                        with the camera aligned along the 
+%                                        world coordinate system's negative 
+%                                        Z-axis. Row-major order means that 
+%                                        points are represented by row 
+%                                        vectors and projected points are 
+%                                        given by pre-multiplication, i.e., 
+%                                        points * matrix.
+%                   - imageSize         Camera resolution given as a 
+%                                        2-element integer vector, in the 
+%                                        form [width height].
+%                   - t                 3-element numeric vector specifying 
+%                                        the camera's translation  
+%                                        (position), in world units, in the 
+%                                        form [X Y Z].
+%                   - R                 3-by-3 rotation matrix specifying 
+%                                        the camera's 3D rotation 
+%                                        (orientation). It must be 
+%                                        right-handed and row-major. 
+%                                        Row-major order means that the 
+%                                        rows of R denote its basis 
+%                                        vectors, i.e.,
+%                                        [X1 Y1 Z1; X2 Y2 Z2; X3 Y3 Z3].
+%                 Note that world2image does not validate the camera 
+%                  parameters, as this is handled by the provided Camera 
+%                  class. Therefore, if a structure array is used instead 
+%                  of this class, be aware that the camera parameters will 
+%                  not be validated.
+%   vertices      Nx3 array of vertices, where N is the number of vertices, 
+%                  and each vertex is in the form [X Y Z] in the world
+%                  coordinate system.
+%   connectivity  Mx1, Mx2 or Mx3 array where each row indexes 
+%                  the vertices of a vertex, edge, or face primitive, 
+%                  respectively. Faces need to be defined with a clockwise 
+%                  winding, as backfaces will be culled. Default: Mx1 array 
+%                  defining unlinked vertices.
+% 
+% OUTPUTS
+%   vertices      Px3 array of vertices, where P is the number of vertices, 
+%                  and each vertex is in the form [X Y Z]. X and Y are in 
+%                  image space, i.e. measured in pixels. Z is in world 
+%                  space, i.e., the distance from the camera along the 
+%                  Z-dimension, measured in world units, and is used for 
+%                  Z-buffering during rasterization. Vertices may be added 
+%                  or removed due to clipping and backface culling.
+%   connectivity  Same definition and order as input. Primitives completely 
+%                  outside of the viewing frustum are removed. If the 
+%                  primitives are triangles, then the output may contain 
+%                  additional new triangles created in the process.
+%   ids           Integer column vector which references the row indices of 
+%                  the input connectivity array. The IDs of deleted 
+%                  primitives will be removed. The IDs of new triangles 
+%                  created by splitting existing triangles during clipping 
+%                  will share the original ID.
+% 
+% Note that world2image depends on the function, clip, which is stored in a 
+% seperate MATLAB file.
+% 
     arguments
         Camera (1,1) { mustHaveFields( Camera, ...
-            [ "imageSize", "projectionMatrix", "t", "R" ] ) }
+            [ "projectionMatrix", "imageSize", "t", "R" ] ) }
         vertices (:,3) { mustBeNonempty, mustBeNumeric, mustBeReal, ...
             mustBeNonNan, mustBeFinite }
         connectivity { mustBeNonempty, mustBeInteger, ...

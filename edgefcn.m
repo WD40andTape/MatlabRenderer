@@ -8,27 +8,35 @@ function [ inside, barycentric ] = edgefcn( vertices, faces, points )
 %   [ inside, barycentric ] = edgefcn( vertices, faces, points )
 % 
 % INPUTS
-%   vertices     Nx3 matrix of vertices, where N is the number of vertices, 
-%                 and each vertex is in the form [X Y Z]. X and Y are in 
-%                 image space, i.e. measured in pixels. Z is in world 
-%                 space, i.e., the distance from the camera along the 
-%                 Z-dimension, measured in world units. Vertices can be
-%                 inside or outside of the image bounds.
-%   faces        Mx3 matrix of faces, where M is the number of faces and 
+%   vertices     Vx2 array of vertices, where V is the number of vertices, 
+%                 and each vertex is in the form [X Y] in the image space 
+%                 coordiante system and are therefore measured in pixels.
+%                 Vertices can be inside or outside of the image bounds.
+%   faces        Fx3 array of faces, where F is the number of faces and 
 %                 each row indexes the 3 vertices of a triangle. Faces 
 %                 should be defined with a clockwise winding. Points within 
 %                 faces with a counterclockwise winding will always return 
 %                 false, as these are considered to be backfaces.
-%   points       Qx2 matrix of points to test. If multiple faces are 
-%                 given (M > 1), only one point can be tested (Q == 1). The
-%                 form of points should match vertices, i.e., either [x y]
-%                 or [y x], although switching the axes inverts the face 
+%   points       Px2 array of points to test. If multiple faces are 
+%                 given (F > 1), only one point can be tested (P == 1). The
+%                 form of points should match vertices, i.e., either [X Y]
+%                 or [Y X], although switching the axes inverts the face 
 %                 windings.
 % 
 % OUTPUTS
-%   inside       Mx1 boolean matrix. Where true, the point is within 
-%                 the respective face.
-%   barycentric  Barycentric coordinate of image points.
+%   inside       If many points are tested again one face (P > 1, F == 1), 
+%                 inside is a Px1 boolean array. Where true, the 
+%                 respective point is within the given face. If one point 
+%                 is tested against many faces (P == 1, F > 1), inside is 
+%                 an Fx1 boolean array. Where true, the given point is 
+%                 within the respective face.
+%   barycentric  If many points are tested again one face (P > 1, F == 1), 
+%                 barycentric is a Px3 numeric array, containing the 
+%                 barycentric coordinate of each point with respect to the 
+%                 given face. If one point is tested against many faces 
+%                 (P == 1, F > 1), barycentric is an Fx3 numeric array, 
+%                 containing the barycentric coordinates of the given point 
+%                 with respect to each face.
 % 
 % Be aware that no top-left rule for rendering overlapping edges is 
 % implemented. This can cause a dark edge to appear at the border between 

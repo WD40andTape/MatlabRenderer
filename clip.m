@@ -1,6 +1,7 @@
 function [ vertices, connectivity, ids ] = clip( vertices, connectivity )
-%CLIP Clip faces/lines/vertices in the clip space of the graphics pipeline.
-% Implements clipping for vertices, lines/edges (with the Cohen-Sutherland 
+%CLIP Clip faces/edges/vertices in the clip space of the graphics pipeline.
+% 
+% Implements clipping for vertices, edges/lines (with the Cohen-Sutherland 
 % algorithm), and triangular faces/meshes (with the Sutherland-Hodgman 
 % algorithm) in the clip space of the rendering pipeline. The clip space 
 % occurs after the projection matrix is applied, but before the perspective 
@@ -11,24 +12,24 @@ function [ vertices, connectivity, ids ] = clip( vertices, connectivity )
 %   [ vertices, connectivity, id ] = clip( vertices, connectivity )
 %
 % INPUTS
-%   vertices      Nx4 matrix, where each row represents the homogenous
-%                  coordinates (x,y,z,w) of a vertex in 4D clip space. We 
+%   vertices      Nx4 array, where each row represents the homogenous
+%                  coordinates (X,Y,Z,W) of a vertex in 4D clip space. We 
 %                  use the convention that the clip space is defined by 
-%                  -w≤x≤w, -w≤y≤w, -w≤z≤w. The alternative convention 
-%                  defines 0≤z≤w.
-%   connectivity  (OPTIONAL) Mx1, Mx2 or Mx3 matrix where each row indexes 
-%                  the vertices of a primitive respectively. Faces need to 
-%                  be defined with a clockwise winding.
-%                  Default: Mx1 matrix defining unlinked vertices.
+%                  -W≤X≤W, -W≤Y≤W, -W≤Z≤W. The alternative convention 
+%                  defines 0≤Z≤W.
+%   connectivity  (OPTIONAL) Mx1, Mx2 or Mx3 array where each row indexes 
+%                  the vertices of a vertex, edge, or face primitive, 
+%                  respectively. Faces need to be defined with a clockwise 
+%                  winding. Default: Mx1 array defining unlinked vertices.
 % OUTPUTS
-%   vertices      Same definition as input. Unused vertices are removed but 
-%                  vertices may contain coincident points.
+%   vertices      Same definition as input. Vertices may be added or 
+%                  removed during clipping.
 %   connectivity  Same definition and order as input. Primitives completely 
 %                  outside of the viewing frustum are removed. If the 
 %                  primitives are triangles, then the output may contain 
 %                  additional new triangles created in the process.
 %   ids           Integer column vector which references the row indices of 
-%                  the input connectivity matrix. The IDs of deleted 
+%                  the input connectivity array. The IDs of deleted 
 %                  primitives will be removed. The IDs of new triangles 
 %                  created by splitting existing triangles will share the 
 %                  original ID.
@@ -62,7 +63,7 @@ function [ vertices, connectivity, ids ] = clip( vertices, connectivity )
     
     % Extract the primitives to be clipped. This duplicates the vertices so
     % that clipping of one primitive doesn't affect the others.
-    % clippedIds refers to the linear indices of the connectivity matrix.
+    % clippedIds refers to the linear indices of the connectivity array.
     clippedIds = find( clipped );
     % verticesPerClipped is in the format order-by-4-by-numPrimitives.
     verticesPerClipped = vertices( connectivity( clipped, : )', : )';
@@ -72,7 +73,7 @@ function [ vertices, connectivity, ids ] = clip( vertices, connectivity )
     % frustum, as these won't change during clipping.
     connectivity = connectivity(inside,:);
     ids = find( inside );
-    % Delete unused vertices and update connectivity matrix.
+    % Delete unused vertices and update the connectivity array.
     [ usedVertices, ~, connectivity ] = unique( connectivity );
     connectivity = reshape( connectivity, [], order );
     vertices = vertices(usedVertices,:);

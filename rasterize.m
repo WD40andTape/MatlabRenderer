@@ -7,12 +7,12 @@ function [ I, depth ] = rasterize( imageSize, vertices, faces, faceCData )
 % 
 % INPUTS
 %   imageSize   Resolution of output images, in the form [width height].
-%   vertices    Nx3 matrix of vertices, where N is the number of vertices, 
+%   vertices    Nx3 array of vertices, where N is the number of vertices, 
 %                and each vertex is in the form [X Y Z]. X and Y are in 
 %                image space, i.e. measured in pixels. Z is in world space,
 %                i.e., the distance from the camera along the Z-dimension, 
 %                measured in world units, and is used for Z-buffering.
-%   faces       Mx3 matrix of faces, where M is the number of faces and 
+%   faces       Mx3 array of faces, where M is the number of faces and 
 %                each row indexes the 3 vertices of a triangle. Faces 
 %                should be defined with a clockwise winding as backfaces 
 %                will not be rendered.
