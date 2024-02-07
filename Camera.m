@@ -187,6 +187,9 @@ classdef Camera < handle
         
         function varargout = plotcamera( obj, ax, len )
             %PLOTCAMERA Plot a mesh representing the camera.
+            % The camera plot will auto-update when the camera properties 
+            % are changed, for example, if the camera moves. Multiple 
+            % camera graphics may exist for a single Camera instance.
             %
             % SYNTAX
             %   h = obj.plotcamera( ax )
@@ -244,6 +247,10 @@ classdef Camera < handle
         
         function varargout = plotframe( obj, ax, lengths, labels )
             %PLOTFRAME Plot the camera's Cartesian coordinate system.
+            % The frame plot will auto-update when the camera properties 
+            % are changed, for example, if the camera moves. Multiple frame 
+            % graphics may exist for a single Camera instance.
+            %
             % For a more advanced, generalised version of plotframe, see:
             %  - https://mathworks.com/matlabcentral/fileexchange/156419-plotframe-plot-a-3-d-cartesian-coordinate-system
             %  - https://github.com/WD40andTape/plotframe/
@@ -295,6 +302,10 @@ classdef Camera < handle
         
         function varargout = plotfov( obj, ax, dist )
             %PLOTFOV Plot a mesh representing the camera's field-of-view.
+            % The field-of-view plot will auto-update when the camera 
+            % properties are changed, for example, if the camera moves. 
+            % Multiple field-of-view graphics may exist for a single Camera 
+            % instance.
             %
             % SYNTAX
             %   h = obj.plotfov( ax )
