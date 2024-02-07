@@ -1,28 +1,43 @@
 function [ inside, barycentric ] = edgefcn( vertices, faces, points )
 %EDGEFCN Test whether 2D points are within triangular faces.
-% NOTE: You can test against many points against one face OR one point
-% against many faces. Testing of many points against many faces is not
-% supported.
+% edgefcn supports testing many points against one face OR one point
+% against many faces. Testing of many points against many faces is not 
+% possible.
 %
-% [ inside, barycentric ] = edgefcn( vertices, faces, points )
+% SYNTAX
+%   [ inside, barycentric ] = edgefcn( vertices, faces, points )
 % 
 % INPUTS
-% - vertices     Nx2 matrix of vertices in image space. Vertices can be
-%                inside or outside of the image bounds.
-% - faces        Mx3 matrix of faces where each row indexes the
-%                vertices of a triangle. Faces should be defined with
-%                a clockwise winding.
-% - points       Qx2 matrix of points to test. If multiple faces are 
-%                given (M > 1), only one point can be tested (Q == 1).
+%   vertices     Nx3 matrix of vertices, where N is the number of vertices, 
+%                 and each vertex is in the form [X Y Z]. X and Y are in 
+%                 image space, i.e. measured in pixels. Z is in world 
+%                 space, i.e., the distance from the camera along the 
+%                 Z-dimension, measured in world units. Vertices can be
+%                 inside or outside of the image bounds.
+%   faces        Mx3 matrix of faces, where M is the number of faces and 
+%                 each row indexes the 3 vertices of a triangle. Faces 
+%                 should be defined with a clockwise winding. Points within 
+%                 faces with a counterclockwise winding will always return 
+%                 false, as these are considered to be backfaces.
+%   points       Qx2 matrix of points to test. If multiple faces are 
+%                 given (M > 1), only one point can be tested (Q == 1). The
+%                 form of points should match vertices, i.e., either [x y]
+%                 or [y x], although switching the axes inverts the face 
+%                 windings.
 % 
 % OUTPUTS
-% - inside       Mx1 boolean matrix. Where true, the point is within 
-%                the respective face.
-% - barycentric  Barycentric coordinate of image points.
+%   inside       Mx1 boolean matrix. Where true, the point is within 
+%                 the respective face.
+%   barycentric  Barycentric coordinate of image points.
 % 
-% NOTE: No top-left rule for overlapping edges is implemented.
-    
-    assert( size( faces, 1 ) == 1 || size( points, 1 ) == 1 )
+% Be aware that no top-left rule for rendering overlapping edges is 
+% implemented. This can cause a dark edge to appear at the border between 
+% semi-transparent faces.
+%
+    assert( size( faces, 1 ) == 1 || size( points, 1 ) == 1, ...
+        "edgefcn supports testing many points against one face OR " + ...
+        "one point against many faces. Testing of many points " + ...
+        "against many faces is not possible." )
     
     V1 = vertices(faces(:,1),:);
     V2 = vertices(faces(:,2),:);

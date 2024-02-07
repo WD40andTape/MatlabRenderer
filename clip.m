@@ -1,35 +1,38 @@
 function [ vertices, connectivity, ids ] = clip( vertices, connectivity )
-    % Implementation of clipping for vertices, lines/edges (with the 
-    % Cohen-Sutherland algorithm), and triangular faces/meshes (with the 
-    % Sutherland-Hodgman algorithm) in the clip space of the rendering
-    % pipeline. The clip space occurs after the projection matrix is
-    % applied, but before the perspective divide (normalization).
-    %
-    % [vertices,connectivity,ids] = clip(vertices,connectivity)
-    % INPUTS
-    % - vertices      Nx4 matrix, where each row represents the homogenous
-    %                 coordinates (x,y,z,w) of a vertex in 4D clip space.
-    %                 We use the convention that the clip space is defined 
-    %                 by -w≤x≤w, -w≤y≤w, -w≤z≤w. The alternative convention 
-    %                 defines 0≤z≤w.
-    % - connectivity  (OPTIONAL) Mx2 or Mx3 matrix where each row indexes
-    %                 the vertices of a primitive respectively. Faces need
-    %                 to be defined with a clockwise winding.
-    %                 Default: Mx1 matrix defining unlinked vertices.
-    % OUTPUTS
-    % - vertices      Same definition as input. Unused vertices are removed
-    %                 but vertices may contain coincident points.
-    % - connectivity  Same definition and order as input. Primitives 
-    %                 completely outside of the viewing frustum are
-    %                 removed. If the primitives are triangles, then the
-    %                 output may contain additional new triangles created
-    %                 in the process.
-    % - ids           Integer column vector which references the row 
-    %                 indices of the input connectivity matrix. The IDs of 
-    %                 deleted primitives will be removed. The IDs of new 
-    %                 triangles created by splitting existing triangles 
-    %                 will share the original ID.
-    
+%CLIP Clip faces/lines/vertices in the clip space of the graphics pipeline.
+% Implements clipping for vertices, lines/edges (with the Cohen-Sutherland 
+% algorithm), and triangular faces/meshes (with the Sutherland-Hodgman 
+% algorithm) in the clip space of the rendering pipeline. The clip space 
+% occurs after the projection matrix is applied, but before the perspective 
+% divide (normalization).
+%
+% SYNTAX
+%   [ vertices, connectivity, id ] = clip( vertices )
+%   [ vertices, connectivity, id ] = clip( vertices, connectivity )
+%
+% INPUTS
+%   vertices      Nx4 matrix, where each row represents the homogenous
+%                  coordinates (x,y,z,w) of a vertex in 4D clip space. We 
+%                  use the convention that the clip space is defined by 
+%                  -w≤x≤w, -w≤y≤w, -w≤z≤w. The alternative convention 
+%                  defines 0≤z≤w.
+%   connectivity  (OPTIONAL) Mx1, Mx2 or Mx3 matrix where each row indexes 
+%                  the vertices of a primitive respectively. Faces need to 
+%                  be defined with a clockwise winding.
+%                  Default: Mx1 matrix defining unlinked vertices.
+% OUTPUTS
+%   vertices      Same definition as input. Unused vertices are removed but 
+%                  vertices may contain coincident points.
+%   connectivity  Same definition and order as input. Primitives completely 
+%                  outside of the viewing frustum are removed. If the 
+%                  primitives are triangles, then the output may contain 
+%                  additional new triangles created in the process.
+%   ids           Integer column vector which references the row indices of 
+%                  the input connectivity matrix. The IDs of deleted 
+%                  primitives will be removed. The IDs of new triangles 
+%                  created by splitting existing triangles will share the 
+%                  original ID.
+%
     arguments
         vertices (:,4) { mustBeNonempty, mustBeNumeric, mustBeReal, ...
             mustBeNonNan, mustBeFinite }
@@ -194,8 +197,8 @@ end
 %% Validation functions.
 
 function mustBe3DorLower( a )
-%MUSTBE3DORLOWER throws an error if the size of the 2nd dimension
-% of a is more than 3, i.e., a must represent points, lines, or triangles.
+%MUSTBE3DORLOWER throws an error if the size of the 2nd dimension of a is 
+% more than 3, i.e., a must represent points, lines, or triangles.
     if size( a, 2 ) > 3
         id = "clip:Validators:InvalidPrimitives";
         msg = "size( x, 2 ) must be <= 3, representing points, " + ...

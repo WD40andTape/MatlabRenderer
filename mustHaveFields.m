@@ -1,16 +1,23 @@
 function mustHaveFields( a, fields )
-%MUSTHAVEFIELDS throws an error if the structure or class instance, a, does
-% not contain all fields defined in the text array, fields.
+%MUSTHAVEFIELDS Throw an error if a does not have all specified fields.
+% 
+% SYNTAX
+%   mustHaveFields( a, fields )
+% 
+% INPUTS
+%   a        Scalar structure array or class instance.
+%   fields   Required fields of a. String scalar, character vector, string 
+%             array, or cell array of character vectors.
+% 
     arguments
         a (1,1)
         fields { mustBeText }
     end
-    fieldsOfA = fieldnames( a );
-    aHasFields = ismember( fields, fieldsOfA );
+    aHasFields = ismember( fields, fieldnames( a ) );
     if ~all( aHasFields )
-        id = "Validators:MissingCameraFields";
+        id = "Validators:MissingFields";
         msg = sprintf( ...
-            "Must contain the following fields or properties:\n\t- %s", ...
+            "Must contain the missing fields or properties:\n\t- %s", ...
             strjoin( fields(~aHasFields), "\n\t- " ) );
         throwAsCaller( MException( id, msg ) )
     end

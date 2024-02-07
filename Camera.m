@@ -1,45 +1,45 @@
 classdef Camera < handle
-    %CAMERA Object for plotting a camera and storing its properties.
-    %
-    % PROPERTIES
-    %   projectionMatrix  4-by-4 projection matrix. For detailed 
-    %                     documentation, use the command:
-    %                        doc Camera.projectionMatrix
-    %   imageSize         Camera resolution, [width height]. For detailed 
-    %                     documentation, use the command:
-    %                        doc Camera.imageSize
-    %   t                 Camera translation, [x y z]. For detailed 
-    %                     documentation, use the command:
-    %                        doc Camera.t
-    %   R                 3-by-3 camera rotation matrix. For detailed 
-    %                     documentation, use the command:
-    %                        doc Camera.R
-    %   plotHandles       Graphics handles. For detailed documentation, 
-    %                     use the command:
-    %                        doc Camera.plotHandles
-    %
-    % METHODS
-    %   Constructor
-    %       Set and validate Camera properties.
-    %       For detailed documentation, use the command:
-    %           doc Camera.Camera
-    %   plotcamera
-    %       Plot a mesh representing the camera.
-    %       For detailed documentation, use the command:
-    %           doc Camera.plotcamera
-    %   plotframe
-    %       Plot the camera's Cartesian coordinate system.
-    %       For detailed documentation, use the command:
-    %           doc Camera.plotframe
-    %   plotfov
-    %       Plot a mesh representing the camera's field-of-view.
-    %       For detailed documentation, use the command:
-    %           doc Camera.plotfov
-    %   setview
-    %       Set the MATLAB axes's view to match the Camera object.
-    %       For detailed documentation, use the command:
-    %           doc Camera.setview
-    %
+%CAMERA Object for plotting a camera and storing its properties.
+%
+% PROPERTIES
+%   projectionMatrix  4-by-4 projection matrix. For detailed documentation, 
+%                      use the command:
+%                        doc Camera.projectionMatrix
+%   imageSize         Camera resolution, [width height]. For detailed 
+%                      documentation, use the command:
+%                        doc Camera.imageSize
+%   t                 Camera translation, [x y z]. For detailed 
+%                      documentation, use the command:
+%                        doc Camera.t
+%   R                 3-by-3 camera rotation matrix. For detailed 
+%                      documentation, use the command:
+%                        doc Camera.R
+%   plotHandles       Graphics handles. For detailed documentation, use the 
+%                      command:
+%                        doc Camera.plotHandles
+%
+% METHODS
+%   Constructor
+%       Set and validate Camera properties.
+%       For detailed documentation, use the command:
+%           doc Camera.Camera
+%   plotcamera
+%       Plot a mesh representing the camera.
+%       For detailed documentation, use the command:
+%           doc Camera.plotcamera
+%   plotframe
+%       Plot the camera's Cartesian coordinate system.
+%       For detailed documentation, use the command:
+%           doc Camera.plotframe
+%   plotfov
+%       Plot a mesh representing the camera's field-of-view.
+%       For detailed documentation, use the command:
+%           doc Camera.plotfov
+%   setview
+%       Set the MATLAB axes's view to match the Camera object.
+%       For detailed documentation, use the command:
+%           doc Camera.setview
+%
     properties (Access = public)
         % projectionMatrix - Used for rendering
         %
@@ -61,7 +61,8 @@ classdef Camera < handle
         % t - Translation
         %
         % 3-element numeric vector specifying the camera's translation 
-        % (position), in the form [X Y Z]. Its default value is [0 0 0].
+        % (position), in world units, in the form [X Y Z]. Its default 
+        % value is [0 0 0].
         %
         t (1,3) { mustBeNumeric, mustBeNonNan } = [0 0 0]
         
@@ -78,18 +79,18 @@ classdef Camera < handle
         % plotHandles - Graphics handles
         %
         % Structure array containing the fields:
-        %  - camera  An Nx1 column vector of Patch objects, where N is the 
+        %   camera  An Nx1 column vector of Patch objects, where N is the 
         %            number of valid camera graphics objects. If plotcamera 
         %            has not been called, or if all of the graphics objects 
         %            have been deleted, then N is 0.
-        %  - frame   An Nx6 graphics object array, where N is the number of
+        %   frame   An Nx6 graphics object array, where N is the number of
         %            valid frame graphics. If plotframe has not been 
         %            called, or if all of the graphics objects have been 
         %            deleted, then N is 0. Each row of the array references
         %            a single frame and contains 3 Quiver objects and 3 
         %            Text objects, in the form 
         %            [quiverX quiverY quiverZ textX textY textZ].
-        %  - fov     An Nx1 column vector of Patch objects, where N is the 
+        %   fov     An Nx1 column vector of Patch objects, where N is the 
         %            number of valid field-of-view graphics objects. If 
         %            plotfov has not been called, or if all of the graphics 
         %            objects have been deleted, then N is 0.
@@ -110,16 +111,16 @@ classdef Camera < handle
             %
             % INPUTS
             %   projectionMatrix  4-by-4 projection matrix. For detailed 
-            %                     documentation, use the command:
+            %                      documentation, use the command:
             %                        doc Camera.projectionMatrix
             %   imageSize         Camera resolution, [width height]. For  
-            %                     detailed documentation, use the command:
+            %                      detailed documentation, use the command:
             %                        doc Camera.imageSize
             %   t                 Camera translation, [x y z]. For detailed 
-            %                     documentation, use the command:
+            %                      documentation, use the command:
             %                        doc Camera.t
             %   R                 3-by-3 camera rotation matrix. For 
-            %                     detailed documentation, use the command:
+            %                      detailed documentation, use the command:
             %                        doc Camera.R
             %
             % OUTPUTS
@@ -193,14 +194,14 @@ classdef Camera < handle
             %
             % INPUTS
             %   ax    Axes in which to plot. Must be a scalar axes, group 
-            %         (hggroup), or transform (hgtransform) object. The 
-            %         default is the current axes (gca).
+            %          (hggroup), or transform (hgtransform) object. The 
+            %          default is the current axes (gca).
             %   len   Length to plot the camera, between the its back and
-            %         lens. Numeric scalar. The default is 1.
+            %          lens. Numeric scalar. The default is 1.
             %
             % OUTPUTS
             %   h     Patch object. h is also stored in 
-            %         obj.plotHandles.camera .
+            %          obj.plotHandles.camera .
             %
             arguments
                 obj
@@ -254,20 +255,20 @@ classdef Camera < handle
             %
             % INPUTS
             %   ax       Axes in which to plot. Must be a scalar axes,  
-            %            group (hggroup), or transform (hgtransform) 
-            %            object. The default is the current axes (gca).
-            %   lengths  Length to plot each arrow (basis) of the coordinate 
-            %            frame. Scalar, 1-by-3, or 3-by-1 numeric vector. 
-            %            The default is 1.
+            %             group (hggroup), or transform (hgtransform) 
+            %             object. The default is the current axes (gca).
+            %   lengths  Length to plot each arrow (basis) of the 
+            %             coordinate frame. Scalar, 1-by-3, or 3-by-1 
+            %             numeric vector. The default is 1.
             %   labels   Text with which to label each basis. Scalar, 
-            %            1-by-3, or 3-by-1 text vector. Set to "" to 
-            %            disable labels. The default is {'X';'Y';'Z'}.
+            %             1-by-3, or 3-by-1 text vector. Set to "" to 
+            %             disable labels. The default is {'X';'Y';'Z'}.
             %
             % OUTPUTS
             %   h        1-by-6 graphics object array containing 3 Quiver 
-            %            objects and 3 Text objects, in the form 
-            %            [quiverX quiverY quiverZ textX textY textZ]. h is 
-            %            also stored in obj.plotHandles.frame .
+            %             objects and 3 Text objects, in the form 
+            %             [quiverX quiverY quiverZ textX textY textZ]. h is 
+            %             also stored in obj.plotHandles.frame .
             %
             arguments
                 obj
@@ -301,15 +302,15 @@ classdef Camera < handle
             %
             % INPUTS
             %   ax    Axes in which to plot. Must be a scalar axes, group 
-            %         (hggroup), or transform (hgtransform) object. The 
-            %         default is the current axes (gca).
+            %          (hggroup), or transform (hgtransform) object. The 
+            %          default is the current axes (gca).
             %   dist  Distance to plot the camera's field-of-view from the 
-            %         camera's optical center. Numeric scalar. The default 
-            %         is 1.
+            %          camera's optical center. Numeric scalar. The default 
+            %          is 1.
             %
             % OUTPUTS
             %   h     Patch object. h is also stored in 
-            %         obj.plotHandles.fov .
+            %          obj.plotHandles.fov .
             %
             % Note that plotfov depends on the function, raycast, which is
             % stored in a seperate MATLAB file.
@@ -343,7 +344,7 @@ classdef Camera < handle
             %
             % INPUTS
             %   ax    Target axes. Axes object or array of Axes objects. 
-            %         The default is the current axes (gca).
+            %          The default is the current axes (gca).
             %
             % Be aware that changing the low-level CameraViewAngle property 
             % to match the Camera object's field-of-view changes the 
@@ -407,7 +408,7 @@ classdef Camera < handle
             %
             % INPUTS
             %   h   Handle to an existing camera graphics object, created 
-            %       by plotcamera. Scalar Patch object.
+            %        by plotcamera. Scalar Patch object.
             
             % Vertices of the default position are stored in UserData.
             defaultVertices = h.UserData;
@@ -419,9 +420,9 @@ classdef Camera < handle
             %
             % INPUTS
             %   h   Handle to an existing frame, created by plotframe. 
-            %       1-by-6 graphics object array holding 3 Quiver objects 
-            %       and 3 Text objects, in the form 
-            %       [quiverX quiverY quiverZ textX textY textZ].
+            %        1-by-6 graphics object array holding 3 Quiver objects 
+            %        and 3 Text objects, in the form 
+            %        [quiverX quiverY quiverZ textX textY textZ].
             %
             basisVectorLengths = h(1:3).UserData;
             basisVectors = obj.R .* basisVectorLengths;
@@ -437,7 +438,7 @@ classdef Camera < handle
             %
             % INPUTS
             %   h   Handle to an existing field-of-view graphics 
-            %       object, created by plotfov. Scalar Patch object.
+            %        object, created by plotfov. Scalar Patch object.
             %
             dist = h.UserData;
             % Project points from the corners of the image to find the 
@@ -462,8 +463,8 @@ classdef Camera < handle
             % INPUTS
             %   matrix     3-by-3 rotation matrix.
             %   tolerance  Positive numeric scalar used to determine 
-            %              whether the matrix is sufficiently close to 
-            %              right-handed. By default, 1e-4.
+            %               whether the matrix is sufficiently close to 
+            %               right-handed. By default, 1e-4.
             %
             arguments
                 matrix (3,3) { mustBeFloat, mustBeNonNan, mustBeReal }
@@ -501,7 +502,7 @@ classdef Camera < handle
             %
             % INPUTS
             %   x   Scalar of any type. No error is thrown if all elements 
-            %       of x are valid graphics parent objects.
+            %        of x are valid graphics parent objects.
             %
             isParent = isgraphics( x, "matlab.graphics.axis.Axes" ) || ...
                 isgraphics( x, "matlab.graphics.primitive.Group" ) || ...
@@ -521,7 +522,7 @@ classdef Camera < handle
             %
             % INPUTS
             %   ax   Input of any type. No error is thrown if all elements 
-            %        of ax are valid Axes objects.
+            %         of ax are valid Axes objects.
             %
             if ~all( isgraphics( ax, "matlab.graphics.axis.Axes" ) )
                 id = "Camera:Validators:InvalidAxes";

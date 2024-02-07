@@ -1,15 +1,53 @@
 function [ I, depth ] = rasterize( imageSize, vertices, faces, faceCData )
-%RASTERIZE
-% Depends on the seperate function, edgefcn.
-% Face colors, specified as a single color for all faces, or one color per face.
-% For indexed colors:
-%  - 1x1 scalar value, e.g., 0.5 or 1.
-%  - Mx1 vector, where M is the number of faces.
-% For true colors:
-%  - 1x3 vector of floats or unsigned integers defining an RGB triplet.
-%  - Mx3 array of RGB triplets, as above, where M is the number of faces.
-%  - Character vector or scalar string, e.g., 'red' or "#FF0000".
-%  - Mx1 cell array of character vectors or string array, as above.
+%RASTERIZE Rasterize projected mesh to form an image composed of pixels.
+% 
+% SYNTAX
+%   [ I, depth ] = rasterize( imageSize, vertices, faces )
+%   [ I, depth ] = rasterize( imageSize, vertices, faces, faceCData )
+% 
+% INPUTS
+%   imageSize   Resolution of output images, in the form [width height].
+%   vertices    Nx3 matrix of vertices, where N is the number of vertices, 
+%                and each vertex is in the form [X Y Z]. X and Y are in 
+%                image space, i.e. measured in pixels. Z is in world space,
+%                i.e., the distance from the camera along the Z-dimension, 
+%                measured in world units, and is used for Z-buffering.
+%   faces       Mx3 matrix of faces, where M is the number of faces and 
+%                each row indexes the 3 vertices of a triangle. Faces 
+%                should be defined with a clockwise winding as backfaces 
+%                will not be rendered.
+%   faceCData   Face colors, specified as a single color for all faces, or 
+%                one color per face.
+%               For indexed colors, specify in one of these forms:
+%                 - 1x1 scalar value, e.g., 0.5 or 1.
+%                 - Mx1 vector, where M is the number of faces.
+%               For true colors:
+%                 - 1x3 vector of floats or unsigned integers defining an 
+%                   RGB triplet.
+%                 - Mx3 array of RGB triplets, as above, where M is the 
+%                   number of faces.
+%                 - Character vector or scalar string, e.g., 'red' or 
+%                   "#FF0000".
+%                 - Mx1 cell array of character vectors or string array, as 
+%                   above.
+%                By default, faceCData is set to 1 : size( faces, 1 ), so 
+%                that the color denotes the face ID (row subscript of 
+%                faces).
+% 
+% OUTPUTS
+%   I           Rasterized image with the colors specified in faceCData. If 
+%                faceCData was not specified, the values of I denote the ID
+%                (row subscript of faces) of the visible face at each 
+%                pixel. The resolution of I is determined by the imageSize 
+%                input.
+%   depth       Rasterized image giving the depth from the camera to the 
+%                scene at each pixel, as measured in world units. The 
+%                resolution of depth is the same as I, and is determined by 
+%                the imageSize input.
+% 
+% Note that rasterize depends on the function, edgefcn, which is stored in 
+% a seperate MATLAB file.
+% 
     arguments
         imageSize (1,2) { mustBeInteger, mustBePositive }
         vertices (:,3) { mustBeNumeric, mustBeReal, mustBeNonNan, ...

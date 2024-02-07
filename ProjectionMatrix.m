@@ -1,42 +1,41 @@
 classdef ProjectionMatrix < double
-    %PROJECTIONMATRIX Build, store, and modify a camera projection matrix.
-    %
-    % VALUE
-    %   The value of a ProjectionMatrix object is a 4-by-4 projection 
-    %   matrix. It is row-major, right-handed, and the camera is aligned 
-    %   along the world coordinate system's negative Z-axis. Row-major 
-    %   order means that points are represented by row vectors and 
-    %   projected points are given by pre-multiplication, i.e., 
-    %   points * matrix.
-    %
-    %   ProjectionMatrix is a subclass of the built-in type double.
-    %   A ProjectionMatrix object (obj) therefore functions as if it were a 
-    %   variable containing a 4-by-4 array. For example, obj(2,2) returns 
-    %   the value of the (2,2) element of the projection matrix. obj can 
-    %   therefore be passed directly to functions which take a 4-by-4 
-    %   numeric array as input.
-    %   
-    % METHODS
-    %   Constructor
-    %       Build a camera projection matrix.
-    % 
-    %       A projection matrix can be built either with the camera's 
-    %       field-of-view and aspect ratio, or by defining the frustum
-    %       coordinates directly.
-    %
-    %       For detailed documentation, use the command:
-    %           doc ProjectionMatrix.ProjectionMatrix
-    %   decompose
-    %       Extract properties of the camera's view frustum.
-    %
-    %       The given properties are: the position of the near- and 
-    %       far-clipping planes; the left, right, bottom, and top viewing 
-    %       frustum coordinates; the field-of-view in the horizontal and 
-    %       vertical directions, and the aspect ratio of the field-of-view.
-    %
-    %       For detailed documentation, use the command:
-    %           doc ProjectionMatrix.decompose
-    %
+%PROJECTIONMATRIX Build, store, and modify a camera projection matrix.
+%
+% VALUE
+%   The value of a ProjectionMatrix object is a 4-by-4 projection matrix. 
+%   It is row-major, right-handed, and the camera is aligned along the 
+%   world coordinate system's negative Z-axis. Row-major order means that 
+%   points are represented by row vectors and projected points are given by 
+%   pre-multiplication, i.e., points * matrix.
+%
+%   ProjectionMatrix is a subclass of the built-in type double. A 
+%   ProjectionMatrix object (obj) therefore functions as if it were a 
+%   variable containing a 4-by-4 array. For example, obj(2,2) returns the 
+%   value of the (2,2) element of the projection matrix. obj can therefore 
+%   be passed directly to functions which take a 4-by-4 numeric array as 
+%   input.
+%   
+% METHODS
+%   Constructor
+%       Build a camera projection matrix.
+% 
+%       A projection matrix can be built either with the camera's 
+%       field-of-view and aspect ratio, or by defining the frustum
+%       coordinates directly.
+%
+%       For detailed documentation, use the command:
+%           doc ProjectionMatrix.ProjectionMatrix
+%   decompose
+%       Extract properties of the camera's view frustum.
+%
+%       The given properties are: the position of the near- and 
+%       far-clipping planes; the left, right, bottom, and top viewing 
+%       frustum coordinates; the field-of-view in the horizontal and 
+%       vertical directions, and the aspect ratio of the field-of-view.
+%
+%       For detailed documentation, use the command:
+%           doc ProjectionMatrix.decompose
+%
     methods
         function obj = ProjectionMatrix( varargin )
             %PROJECTIONMATRIX Build a camera projection matrix.
@@ -51,48 +50,49 @@ classdef ProjectionMatrix < double
             %
             % INPUTS
             %   matrix       4-by-4 projection matrix. matrix must be 
-            %                row-major and right-handed. A row-major 
-            %                projection matrix will have 0s in elements 
-            %                (1,3) and (2,3).  Convert between row- and 
-            %                column-major order by taking the transpose, 
-            %                i.e, matrix = matrix'. A right-handed 
-            %                row-major projection matrix will 
-            %                have a -1 in element (3,4). For row-major 
-            %                matrices, convert between handedness by 
-            %                negating the 3rd row, i.e., 
-            %                matrix(3,:) = -matrix(3,:).
+            %                 row-major and right-handed. A row-major 
+            %                 projection matrix will have 0s in elements 
+            %                 (1,3) and (2,3).  Convert between row- and 
+            %                 column-major order by taking the transpose, 
+            %                 i.e, matrix = matrix'. A right-handed 
+            %                 row-major projection matrix will 
+            %                 have a -1 in element (3,4). For row-major 
+            %                 matrices, convert between handedness by 
+            %                 negating the 3rd row, i.e., 
+            %                 matrix(3,:) = -matrix(3,:).
             %   fovY         The field-of-view, in radians, in the Y 
-            %                (vertical) direction.
+            %                 (vertical) direction.
             %   aspectRatio  The aspect ratio, which establishes the 
-            %                field-of-view in the X direction. Given as the
-            %                ratio of X to Y, i.e., image width / height.
+            %                 field-of-view in the X direction. Given as 
+            %                 the ratio of X to Y, i.e., 
+            %                 image width / height.
             %   near         The distance from the optical center to the 
-            %                near-clipping plane, in world units, measured 
-            %                along the camera's line-of-sight (local 
-            %                Z-axis). Objects closer than near are not 
-            %                rendered. near must be positive and finite.
+            %                 near-clipping plane, in world units, measured 
+            %                 along the camera's line-of-sight (local 
+            %                 Z-axis). Objects closer than near are not 
+            %                 rendered. near must be positive and finite.
             %   far          The distance to the far-clipping plane, in 
-            %                world units. Objects further than far are not 
-            %                rendered. far must be positive and may be 
-            %                infinite. By default, far is infinite (Inf).
+            %                 world units. Objects further than far are not 
+            %                 rendered. far must be positive and may be 
+            %                 infinite. By default, far is infinite (Inf).
             %   left         Position of the left camera frustum coordinate
-            %                on the near-clipping plane, in world units, 
-            %                measured along the camera's X-axis. Together 
-            %                with right, left determines the width of the 
-            %                image plane, and therefore the field-of-view 
-            %                in the X (horizontal) direction.
+            %                 on the near-clipping plane, in world units, 
+            %                 measured along the camera's X-axis. Together 
+            %                 with right, left determines the width of the 
+            %                 image plane, and therefore the field-of-view 
+            %                 in the X (horizontal) direction.
             %   right        Position of the right camera frustum 
-            %                coordinate, in world units. Right must be 
-            %                greater than left.
+            %                 coordinate, in world units. Right must be 
+            %                 greater than left.
             %   bottom       Position of the bottom camera frustum 
-            %                coordinate, in world units, measured along the 
-            %                camera's Y-axis. Together with top, bottom 
-            %                determines the height of the image plane, and 
-            %                therefore the field-of-view in the Y 
-            %                (vertical) direction.
+            %                 coordinate, in world units, measured along 
+            %                 the camera's Y-axis. Together with top, 
+            %                 bottom determines the height of the image 
+            %                 plane, and therefore the field-of-view in the 
+            %                 Y (vertical) direction.
             %   top          Position of the top camera frustum coordinate, 
-            %                in world units. top must be greater than 
-            %                bottom.
+            %                 in world units. top must be greater than 
+            %                 bottom.
             %
             %   When ProjectionMatrix is called without any arguments, a
             %   default projection matrix is provided. The default 
@@ -180,31 +180,31 @@ classdef ProjectionMatrix < double
             % OUTPUTS
             %   props   Structure array containing:
             %               left         Position of the left camera 
-            %                            frustum coordinate on the 
-            %                            near-clipping plane, in world 
-            %                            units, measured along the camera's 
-            %                            X-axis.
+            %                             frustum coordinate on the 
+            %                             near-clipping plane, in world 
+            %                             units, measured along the 
+            %                             camera's X-axis.
             %               right        Position of the right frustum 
-            %                            coordinate, in world units.
+            %                             coordinate, in world units.
             %               bottom       Position of the bottom frustum 
-            %                            coordinate, in world units, 
-            %                            measured along the camera's 
-            %                            Y-axis.
+            %                             coordinate, in world units, 
+            %                             measured along the camera's 
+            %                             Y-axis.
             %               top          Position of the top frustum 
-            %                            coordinate, in world units.
+            %                             coordinate, in world units.
             %               near         The distance from the optical 
-            %                            center to the near-clipping plane, 
-            %                            in world units, measured along the 
-            %                            camera's line-of-sight (local 
-            %                            Z-axis).
+            %                             center to the near-clipping plane, 
+            %                             in world units, measured along the 
+            %                             camera's line-of-sight (local 
+            %                             Z-axis).
             %               fovY         The field-of-view, in radians, 
-            %                            in the Y (vertical) direction.
+            %                             in the Y (vertical) direction.
             %               fovX         The field-of-view, in radians, in 
-            %                            the X (horizontal) direction.
+            %                             the X (horizontal) direction.
             %               aspectRatio  The aspect ratio of the 
-            %                            field-of-view. Given as the ratio 
-            %                            of X to Y, i.e., 
-            %                            image width / height.
+            %                             field-of-view. Given as the ratio 
+            %                             of X to Y, i.e., 
+            %                             image width / height.
             %
             props.near = obj(4,3) / ( obj(3,3) - 1 );
             if obj(3,3) == -1
