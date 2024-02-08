@@ -1,13 +1,13 @@
 function [ vertices, connectivity, ids ] = ...
-        world2image( Camera, vertices, connectivity )
+        world2image( Cam, vertices, connectivity )
 %WORLD2IMAGE Project world points, edges, and faces into image space.
 % 
 % SYNTAX
-%   [ vertices, connectivity, ids ] = world2image( Camera, vertices )
+%   [ vertices, connectivity, ids ] = world2image( Cam, vertices )
 %   [ vertices, connectivity, ids ] = world2image( __ , connectivity )
 % 
 % INPUTS
-%   Camera        Instance of the provided Camera class, or structure array 
+%   Cam           Instance of the provided Camera class, or structure array 
 %                  containing the following fields:
 %                   - projectionMatrix  4-by-4 projection matrix. It must 
 %                                        be row-major and right-handed, 
@@ -69,7 +69,7 @@ function [ vertices, connectivity, ids ] = ...
 % stored in a seperate MATLAB file.
 % 
     arguments
-        Camera (1,1) { mustHaveFields( Camera, ...
+        Cam (1,1) { mustHaveFields( Cam, ...
             [ "projectionMatrix", "imageSize", "t", "R" ] ) }
         vertices (:,3) { mustBeNonempty, mustBeNumeric, mustBeReal, ...
             mustBeNonNan, mustBeFinite }
@@ -86,17 +86,17 @@ function [ vertices, connectivity, ids ] = ...
         normals = cross( B - A, C - A );
         normals = normals ./ vecnorm( normals, 2, 2 );
         barycenters = mean( cat( 3, A, B, C ), 3 );
-        lineOfSight = barycenters - Camera.t;
+        lineOfSight = barycenters - Cam.t;
         isBackFacing = dot( normals, lineOfSight, 2 ) > 0;
         connectivity(isBackFacing,:) = [];
         ids(isBackFacing) = [];
     end
-    verticesCameraSpace = ( vertices - Camera.t ) * Camera.R';
+    verticesCameraSpace = ( vertices - Cam.t ) * Cam.R';
     % Convert points from Cartesian to homogenous space.
     verticesCameraSpace = ...
         [ verticesCameraSpace, ones( size( verticesCameraSpace, 1 ), 1 ) ];
     % Project points from camera space to homogenous clipping space.
-    verticesClipSpace = verticesCameraSpace * Camera.projectionMatrix;
+    verticesClipSpace = verticesCameraSpace * Cam.projectionMatrix;
     % Clipping updates the scene so that no geometry appears outside of the 
     % camera's viewing frustum. Faces may be modified, created, or 
     % removed.
@@ -111,16 +111,16 @@ function [ vertices, connectivity, ids ] = ...
     % Viewport transform from NDC to raster space. 
     % Accounts for the inverted Y-axis.
     verticesRasterSpace(:,1) = ...
-        (verticesNdcSpace(:,1) + 1) * 0.5 * (Camera.imageSize(1) - 1);
+        (verticesNdcSpace(:,1) + 1) * 0.5 * (Cam.imageSize(1) - 1);
     verticesRasterSpace(:,2) = ...
-        (1 - (verticesNdcSpace(:,2) + 1) * 0.5) * (Camera.imageSize(2) - 1);
+        (1 - (verticesNdcSpace(:,2) + 1) * 0.5) * (Cam.imageSize(2) - 1);
     % Accounts for 1-based pixel indexing.
     verticesRasterSpace = verticesRasterSpace + 1;
     % Add the Z-coordinate to the vertex. This is used for rasterization
     % to decide which face is closest to the camera and therefore should
     % be rendered.
     verticesCameraSpace = ...
-        verticesClipSpace * pinv( Camera.projectionMatrix );
+        verticesClipSpace * pinv( Cam.projectionMatrix );
     vertices = verticesRasterSpace;
     vertices(:,3) = -verticesCameraSpace(:,3);
 end

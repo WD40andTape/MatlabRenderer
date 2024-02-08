@@ -1,12 +1,12 @@
-function [ rays, pixels ] = raycast( Camera, pixels, isNormalize )
+function [ rays, pixels ] = raycast( Cam, pixels, isNormalize )
 %RAYCAST Compute ray direction from the camera to pixels.
 % 
 % SYNTAX
-%   rays = raycast( Camera, pixels )
-%   [ rays, pixels ] = raycast( Camera )
+%   rays = raycast( Cam, pixels )
+%   [ rays, pixels ] = raycast( Cam )
 % 
 % INPUTS
-%   Camera       Instance of the provided Camera class, or structure array 
+%   Cam          Instance of the provided Camera class, or structure array 
 %                 containing the following fields:
 %                  - projectionMatrix  4-by-4 projection matrix. It must be 
 %                                       row-major and right-handed, with 
@@ -39,7 +39,7 @@ function [ rays, pixels ] = raycast( Camera, pixels, isNormalize )
 %                 camera's field-of-view, are also accepted but display a 
 %                 warning. Pixels containing NaN will return NaNs. By 
 %                 default, a ray will be cast to every pixel within the 
-%                 image, as defined by Camera.imageSize.
+%                 image, as defined by Cam.imageSize.
 %   isNormalize  Scalar logical, by default false. If true, each output ray 
 %                 output will have a Euclidean length of 1. If false, each 
 %                 output ray will have a length equal to the distance 
@@ -55,10 +55,10 @@ function [ rays, pixels ] = raycast( Camera, pixels, isNormalize )
 %                 respective ray in rays. If the pixels input was 
 %                 provided, the pixels output will be identical. If it was 
 %                 not provided, a ray will be cast to every pixel within 
-%                 the image, as defined by Camera.imageSize.
+%                 the image, as defined by Cam.imageSize.
 % 
     arguments
-        Camera (1,1) { mustHaveFields( Camera, ...
+        Cam (1,1) { mustHaveFields( Cam, ...
             [ "imageSize", "projectionMatrix", "R" ] ) }
         pixels (:,2) { mustBeNumeric, mustBeReal } = []
         isNormalize (1,1) logical = false
@@ -66,9 +66,9 @@ function [ rays, pixels ] = raycast( Camera, pixels, isNormalize )
     if isempty( pixels )
         % Cast rays from of all pixels within the image bounds.
         [ I, J ] = ...
-            meshgrid( 1 : Camera.imageSize(1), 1 : Camera.imageSize(2) );
+            meshgrid( 1 : Cam.imageSize(1), 1 : Cam.imageSize(2) );
         pixels = [ I(:), J(:) ];
-    elseif any( pixels < 1 | pixels > Camera.imageSize, "all" )
+    elseif any( pixels < 1 | pixels > Cam.imageSize, "all" )
         warning( "Out-of-image pixels, i.e., that are " + ...
             "outside of the camera's field-of-view, were provided." )
     end
@@ -77,18 +77,18 @@ function [ rays, pixels ] = raycast( Camera, pixels, isNormalize )
     pRaster = pixels - 1;
     % Transform between coordinate systems in the order: raster -> 
     % normalized device coordinates (NDC) -> clip -> camera -> world.
-    pNDC(:,1) = ( ( 2 * pRaster(:,1) ) / ( Camera.imageSize(1) - 1 ) ) - 1;
-    pNDC(:,2) = 1 - ( ( 2 * pRaster(:,2) ) / ( Camera.imageSize(2) - 1 ) );
+    pNDC(:,1) = ( ( 2 * pRaster(:,1) ) / ( Cam.imageSize(1) - 1 ) ) - 1;
+    pNDC(:,2) = 1 - ( ( 2 * pRaster(:,2) ) / ( Cam.imageSize(2) - 1 ) );
     % Set Z = -1, at the near plane. If Z = 1, points at the far plane. 
     % Set W = 1, to implictly convert from Cartesian coordinates to 
     % homogenous coordinates.
     pClip = [ pNDC, -ones( nPixels, 1 ), ones( nPixels, 1 ) ];
-    pCamera = pClip * pinv( Camera.projectionMatrix );
+    pCamera = pClip * pinv( Cam.projectionMatrix );
     % Divide by W to convert back from homogenous to Cartesian coordinates.
     pCamera = pCamera(:,1:3) ./ pCamera(:,4);
     % Do not translate the rays as the output is a vector direction, not 
     % the pixel's point on the near plane.
-    rays = pCamera * Camera.R;
+    rays = pCamera * Cam.R;
     if isNormalize
         % Normalize to a distance of 1 to form a direction vector.
         rays = rays ./ vecnorm( rays, 2, 2 );
