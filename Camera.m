@@ -4,41 +4,51 @@ classdef Camera < handle
 % PROPERTIES
 %   projectionMatrix  4-by-4 projection matrix. For detailed documentation, 
 %                      use the command:
-%                        doc Camera.projectionMatrix
+%                        <a href="matlab: doc Camera.projectionMatrix"
+%                           >doc Camera.projectionMatrix</a>
 %   imageSize         Camera resolution, [width height]. For detailed 
 %                      documentation, use the command:
-%                        doc Camera.imageSize
+%                        <a href="matlab: doc Camera.imageSize"
+%                           >doc Camera.imageSize</a>
 %   t                 Camera translation, [x y z]. For detailed 
 %                      documentation, use the command:
-%                        doc Camera.t
+%                        <a href="matlab: doc Camera.t"
+%                           >doc Camera.t</a>
 %   R                 3-by-3 camera rotation matrix. For detailed 
 %                      documentation, use the command:
-%                        doc Camera.R
+%                        <a href="matlab: doc Camera.R"
+%                           >doc Camera.R</a>
 %   plotHandles       Graphics handles. For detailed documentation, use the 
 %                      command:
-%                        doc Camera.plotHandles
+%                        <a href="matlab: doc Camera.plotHandles"
+%                           >doc Camera.plotHandles</a>
 %
 % METHODS
 %   Constructor
 %       Set and validate Camera properties.
 %       For detailed documentation, use the command:
-%           doc Camera.Camera
+%           <a href="matlab: doc Camera.Camera"
+%               >doc Camera.Camera</a>
 %   plotcamera
 %       Plot a mesh representing the camera.
 %       For detailed documentation, use the command:
-%           doc Camera.plotcamera
+%           <a href="matlab: doc Camera.plotcamera"
+%               >doc Camera.plotcamera</a>
 %   plotframe
 %       Plot the camera's Cartesian coordinate system.
 %       For detailed documentation, use the command:
-%           doc Camera.plotframe
+%           <a href="matlab: doc Camera.plotframe"
+%               >doc Camera.plotframe</a>
 %   plotfov
 %       Plot a mesh representing the camera's field-of-view.
 %       For detailed documentation, use the command:
-%           doc Camera.plotfov
+%           <a href="matlab: doc Camera.plotfov"
+%               >doc Camera.plotfov</a>
 %   setview
 %       Set the MATLAB axes's view to match the Camera object.
 %       For detailed documentation, use the command:
-%           doc Camera.setview
+%           <a href="matlab: doc Camera.setview"
+%               >doc Camera.setview</a>
 %
     properties (Access = public)
         % projectionMatrix - Used for rendering
@@ -95,6 +105,8 @@ classdef Camera < handle
         %            plotfov has not been called, or if all of the graphics 
         %            objects have been deleted, then N is 0.
         %
+        % See also Camera.plotcamera, Camera.plotframe, Camera.plotfov.
+        %
         plotHandles (1,1) struct { mustHaveFields( plotHandles, ...
             [ "camera", "frame", "fov" ] ) } = struct( "camera", ...
             gobjects(0,1), "frame", gobjects(0,6), "fov", gobjects(0,1) )
@@ -112,20 +124,25 @@ classdef Camera < handle
             % INPUTS
             %   projectionMatrix  4-by-4 projection matrix. For detailed 
             %                      documentation, use the command:
-            %                        doc Camera.projectionMatrix
+            %                        <a href="matlab: doc Camera.projectionMatrix"
+            %                           >doc Camera.projectionMatrix</a>
             %   imageSize         Camera resolution, [width height]. For  
             %                      detailed documentation, use the command:
-            %                        doc Camera.imageSize
+            %                        <a href="matlab: doc Camera.imageSize"
+            %                           >doc Camera.imageSize</a>
             %   t                 Camera translation, [x y z]. For detailed 
             %                      documentation, use the command:
-            %                        doc Camera.t
+            %                        <a href="matlab: doc Camera.t"
+            %                           >doc Camera.t</a>
             %   R                 3-by-3 camera rotation matrix. For 
             %                      detailed documentation, use the command:
-            %                        doc Camera.R
+            %                        <a href="matlab: doc Camera.R"
+            %                           >doc Camera.R</a>
             %
             % OUTPUTS
             %   obj               For documentation, use the command:
-            %                        doc Camera
+            %                        <a href="matlab: doc Camera"
+            %                           >doc Camera</a>
             %
             obj.projectionMatrix = projectionMatrix;
             if nargin > 1 && ~isempty( imageSize )
@@ -323,8 +340,8 @@ classdef Camera < handle
             %   h     Patch object. h is also stored in 
             %          obj.plotHandles.fov .
             %
-            % Note that plotfov depends on the function, raycast, which is
-            % stored in a seperate MATLAB file.
+            % Please note that plotfov depends on the function, raycast, 
+            % which is stored in a seperate MATLAB file.
             %
             arguments
                 obj

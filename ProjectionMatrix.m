@@ -24,7 +24,8 @@ classdef ProjectionMatrix < double
 %       coordinates directly.
 %
 %       For detailed documentation, use the command:
-%           doc ProjectionMatrix.ProjectionMatrix
+%           <a href="matlab: doc ProjectionMatrix.ProjectionMatrix"
+%               >doc ProjectionMatrix.ProjectionMatrix</a>
 %   decompose
 %       Extract properties of the camera's view frustum.
 %
@@ -34,7 +35,8 @@ classdef ProjectionMatrix < double
 %       vertical directions, and the aspect ratio of the field-of-view.
 %
 %       For detailed documentation, use the command:
-%           doc ProjectionMatrix.decompose
+%           <a href="matlab: doc ProjectionMatrix.decompose"
+%               >doc ProjectionMatrix.decompose</a>
 %
     methods
         function obj = ProjectionMatrix( varargin )

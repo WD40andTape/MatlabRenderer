@@ -45,8 +45,8 @@ function [ I, depth ] = rasterize( imageSize, vertices, faces, faceCData )
 %                resolution of depth is the same as I, and is determined by 
 %                the imageSize input.
 % 
-% Note that rasterize depends on the function, edgefcn, which is stored in 
-% a seperate MATLAB file.
+% Please note that rasterize depends on the function, edgefcn, which is 
+% stored in a seperate MATLAB file.
 % 
     arguments
         imageSize (1,2) { mustBeInteger, mustBePositive }
@@ -112,7 +112,7 @@ function colors = processcolors( colors, faces )
         iscellstr( colors )
         % Convert color names, such as 'red', or hexadecimal color codes,  
         % such as "#FF0000", to RGB.
-        % Note: validatecolor also throws errors for invalid color formats.
+        % Note validatecolor also throws errors for invalid color formats.
         colors = validatecolor( colors, "multiple" );
     elseif ~isnumeric( colors )
         id = "rasterize:Validators:UnrecognizedColor";

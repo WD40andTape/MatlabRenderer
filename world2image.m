@@ -65,8 +65,8 @@ function [ vertices, connectivity, ids ] = ...
 %                  created by splitting existing triangles during clipping 
 %                  will share the original ID.
 % 
-% Note that world2image depends on the function, clip, which is stored in a 
-% seperate MATLAB file.
+% Please note that world2image depends on the function, clip, which is 
+% stored in a seperate MATLAB file.
 % 
     arguments
         Camera (1,1) { mustHaveFields( Camera, ...
