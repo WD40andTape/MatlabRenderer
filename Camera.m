@@ -355,7 +355,8 @@ classdef Camera < handle
             end
             faces = [ 1 2 3; 1 3 4; 1 4 5; 1 5 2 ];
             h = patch( ax, "Faces", faces, "Vertices", ...
-                [], "FaceColor", [0 0 0], "FaceAlpha", 0.1 );
+                [], "FaceColor", [0 0 0], "FaceAlpha", 0.1, ...
+                "FaceLighting", "none" );
             h.UserData = dist; % Used in obj.updatefov .
             obj.updatefov( h )
             obj.plotHandles.fov = [ obj.plotHandles.fov; h ];
