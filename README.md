@@ -4,7 +4,13 @@
 <!--[![View on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)]()-->
 <!--[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)]()-->
 
-<img src="figure.gif" width="800px">
+Implementation of the computer graphics pipeline for triangulated meshes, in addition to a number of camera plotting functions.
+
+A notable use case is to simulate RGB or Kinect (depth) camera images for computer vision applications.
+
+<img src="figure.gif" width="600px">
+
+The codebase is compact, extensively documented, and uses only MATLAB built-in functions.
 
 ## Functions and Classes
 
@@ -14,17 +20,27 @@
 | `rasterize` | Rasterize projected mesh to form an image composed of pixels. |
 | `raycast` | Compute ray direction from the camera to pixels. |
 | `clip` | Clip faces, edges, vertices in the clip space of the graphics pipeline. Used by `world2image`. |
-| `edgefcn` | Test whether 2D points are within triangular faces. Used by `edgefcn`. |
+| `edgefcn` | Test whether 2D points are within triangular faces. Used by `rasterize`. |
 | `Camera` | Object for plotting a camera and storing its properties.<ul><li>*Properties*</li><ul><li>`projectionMatrix` : 4-by-4 projection matrix.</li><li>`imageSize` : Camera resolution, `[width height]`.</li><li>`t` : Camera translation, `[x y z]`.</li><li>`R` : 3-by-3 camera rotation matrix.</li><li>`plotHandles` : Graphics handles.</li></ul><li>*Methods*</li><ul><li>`Constructor` : Set and validate Camera properties.</li><li>`plotcamera` : Plot a mesh representing the camera.</li><li>`plotframe` : Plot the camera's Cartesian coordinate system.</li><li>`plotfov` : Plot a mesh representing the camera's field-of-view.</li><li>`setview` : Set the MATLAB axes' view to match the Camera object.</li></ul></ul> |
 | `ProjectionMatrix` | Build, store, and modify a camera projection matrix.<ul><li>*Value* : 4-by-4 projection matrix.</li><li>*Methods*</li><ul><li>`Constructor` : Build a camera projection matrix, either with the camera's field-of-view and aspect ratio, or by defining the frustum coordinates directly.</li><li>`decompose` : Extract properties of the camera's view frustum.</li></ul></ul> |
+
+For full documentation, please see the respective MATLAB file, or use the `doc` command, e.g., `doc world2image`.
 
 ## Example
 
 Please see [`example.m`](example.m), which outputs the [figure above](figure.gif).
 
+## Notes
+
+- The toolbox was designed to have only minimal internal dependencies. Therefore `Camera`, `clip`, `edgefcn`, etc. can largely be used independently of the rest of the toolbox. The toolbox's individual functions and classes could be useful for *different* rendering pipelines, for example, to rasterize 2D vector graphics, or beyond the computer graphics pipeline, for example, to simply plot the location of a camera within a scene.
+
+- As the renderer runs on the CPU and uses only MATLAB code, its speed is limited. On a standard laptop, for a scene with 8000 faces and at a resolution of 300x300, I get around 12 fps. Nevertheless, for applications which don't need a high speed, having everything within MATLAB is handy.
+
+- Does not currently implement interpolated face colors (from colored vertices) or lighting.
+
 ## Compatibility
 
-Created in 2022b. All files are compatible with MATLAB release 2022a and later, but see the documentation of  individual files for their specific compatability. Compatible with all platforms.
+Created in 2022b. All files are compatible with MATLAB release 2022a and later, but see the documentation of  individual files for their specific compatability. Compatible with all platforms. No external dependencies.
 
 ## License and Citation
 
