@@ -59,10 +59,10 @@ function [ I, depth ] = rasterize( imageSize, vertices, faces, faceCData )
     faceCData = processcolors( faceCData, faces );
     if isfloat( faceCData )
         I = nan( [ imageSize([2 1]), size( faceCData, 2 ) ], ...
-            "like", faceCData );
+            like=faceCData );
     else % isinteger( faceCData )
         I = zeros( [ imageSize([2 1]), size( faceCData, 2 ) ], ...
-            "like", faceCData );
+            like=faceCData );
     end
     depth = inf( imageSize([2 1]) );
     % Return early if no geometry is visible.
@@ -92,7 +92,7 @@ function [ I, depth ] = rasterize( imageSize, vertices, faces, faceCData )
             ind = sub2ind( imageSize([2 1]), ...
                 pixels(inside,2), pixels(inside,1) );
             [ depth(ind), minI ] = ...
-                min( [ depth(ind), z ], [], 2, 'linear' );
+                min( [ depth(ind), z ], [], 2, "linear" );
             updated = minI > numel( ind );
             ind = ind(updated);
             I(ind) = faceCData(iFace,1);

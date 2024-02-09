@@ -38,7 +38,7 @@ classdef ProjectionMatrix < double
 %           <a href="matlab: doc ProjectionMatrix.decompose"
 %               >doc ProjectionMatrix.decompose</a>
 %
-    methods
+    methods(Access=public)
         function obj = ProjectionMatrix( varargin )
             %PROJECTIONMATRIX Build a camera projection matrix.
             %
@@ -269,13 +269,13 @@ classdef ProjectionMatrix < double
             [ left, right, bottom, top, near, far ] = varargin{:};
             id = "ProjectionMatrix:InvalidFrustum";
             if ~all( cellfun( @(x) isscalar( x ) & isnumeric( x ), ...
-                    varargin ), 'all' )
+                    varargin ), "all" )
                 msg = "The positions of the frustum planes must" + ...
                     " numeric scalars.";
                 throwAsCaller( MException( id, msg ) )
             elseif any( cellfun( @(x) ~isreal( x ) | isnan( x ), ...
-                    varargin ), 'all' ) || ...
-                    any( cellfun( @isinf, varargin(1:5) ), 'all' )
+                    varargin ), "all" ) || ...
+                    any( cellfun( @isinf, varargin(1:5) ), "all" )
                 msg = "The positions of the frustum planes must" + ...
                     " be non-nan, finite, and real, with the " + ...
                     "exception of the far plane which can be infinite.";

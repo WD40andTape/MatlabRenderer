@@ -50,7 +50,7 @@ classdef Camera < handle
 %           <a href="matlab: doc Camera.setview"
 %               >doc Camera.setview</a>
 %
-    properties (Access = public)
+    properties(Access=public)
         % projectionMatrix - Used for rendering
         %
         % 4-by-4 projection matrix. It is row-major, right-handed, and the 
@@ -111,7 +111,7 @@ classdef Camera < handle
             [ "camera", "frame", "fov" ] ) } = struct( "camera", ...
             gobjects(0,1), "frame", gobjects(0,6), "fov", gobjects(0,1) )
     end
-    methods
+    methods(Access=public)
         function obj = Camera( projectionMatrix, imageSize, t, R )
             %CAMERA Set and validate Camera properties.
             %
@@ -251,9 +251,8 @@ classdef Camera < handle
                  9 10 11 12];
             % C sets the camera to black and the lens to yellow.
             C = [ zeros( size( faces, 1 ) - 1, 3 ); 1 1 0 ];
-            h = patch( ax, "Faces", faces, "Vertices", [], ...
-                "FaceVertexCData", C, "FaceColor", "flat", ...
-                "FaceLighting", "none" );
+            h = patch( ax, Faces=faces, Vertices=[], ...
+                FaceVertexCData=C, FaceColor="flat", FaceLighting="none" );
             h.UserData = vertices; % Used in obj.updatecamera .
             obj.updatecamera( h )
             obj.plotHandles.camera = [ obj.plotHandles.camera; h ];
@@ -300,12 +299,12 @@ classdef Camera < handle
                 lengths (3,1) { mustBeNonnegative } = 1
                 labels (3,1) { mustBeText } = { 'X'; 'Y'; 'Z' }
             end
-            h(1) = matlab.graphics.chart.primitive.Quiver( "Parent", ax );
-            h(2) = matlab.graphics.chart.primitive.Quiver( "Parent", ax );
-            h(3) = matlab.graphics.chart.primitive.Quiver( "Parent", ax );
-            h(4) = matlab.graphics.primitive.Text( "Parent", ax );
-            h(5) = matlab.graphics.primitive.Text( "Parent", ax );
-            h(6) = matlab.graphics.primitive.Text( "Parent", ax );
+            h(1) = matlab.graphics.chart.primitive.Quiver( Parent=ax );
+            h(2) = matlab.graphics.chart.primitive.Quiver( Parent=ax );
+            h(3) = matlab.graphics.chart.primitive.Quiver( Parent=ax );
+            h(4) = matlab.graphics.primitive.Text( Parent=ax );
+            h(5) = matlab.graphics.primitive.Text( Parent=ax );
+            h(6) = matlab.graphics.primitive.Text( Parent=ax );
             set( h(1:3), ...
                 "AutoScale", "off", "LineWidth", 2, "MaxHeadSize", 0.4, ...
                 "UserData", lengths ) % UserData is used in obj.updateframe
@@ -348,15 +347,14 @@ classdef Camera < handle
                 ax (1,1) { Camera.mustBeParent( ax ) } = gca
                 dist (1,1) { mustBePositive } = 1
             end
-            if exist( 'raycast', 'file' ) ~= 2
+            if exist( "raycast", "file" ) ~= 2
                 warning( "plotfov depends on the raycast function, " + ...
                     "which was not found on the search path." )
                 return
             end
             faces = [ 1 2 3; 1 3 4; 1 4 5; 1 5 2 ];
-            h = patch( ax, "Faces", faces, "Vertices", ...
-                [], "FaceColor", [0 0 0], "FaceAlpha", 0.1, ...
-                "FaceLighting", "none" );
+            h = patch( ax, Faces=faces, Vertices=[], ...
+                FaceColor=[0 0 0], FaceAlpha=0.1, FaceLighting="none" );
             h.UserData = dist; % Used in obj.updatefov .
             obj.updatefov( h )
             obj.plotHandles.fov = [ obj.plotHandles.fov; h ];
