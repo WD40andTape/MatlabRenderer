@@ -57,6 +57,19 @@ function [ rays, pixels ] = raycast( Cam, pixels, isNormalize )
 %                 not provided, a ray will be cast to every pixel within 
 %                 the image, as defined by Cam.imageSize.
 % 
+% EXAMPLE: Please see the file 'example.m'.
+% 
+% Please note that raycast depends on the function, mustHaveFields, which 
+% is stored in a seperate MATLAB file. Created in 2022b. Compatible with 
+% 2020b and later. Compatible with all platforms. Please cite George 
+% Abrahams: https://github.com/WD40andTape/MatlabRenderer.
+
+% Published under MIT License (see LICENSE.txt).
+% Copyright (c) 2024 George Abrahams.
+%  - https://github.com/WD40andTape/
+%  - https://www.linkedin.com/in/georgeabrahams/
+%  - https://scholar.google.com/citations?user=T_xxZLwAAAAJ
+
     arguments
         Cam (1,1) { mustHaveFields( Cam, ...
             [ "imageSize", "projectionMatrix", "R" ] ) }

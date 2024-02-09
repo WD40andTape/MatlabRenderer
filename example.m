@@ -1,5 +1,15 @@
 % Example demonstrating the steps and outputs of the rendering process.
 % If you don't want to run this, figure.gif is the resultant output.
+% 
+% Created in 2022b. Compatible with 2022a and later. Compatible with all 
+% platforms. Please cite George Abrahams: 
+% https://github.com/WD40andTape/MatlabRenderer.
+
+% Published under MIT License (see LICENSE.txt).
+% Copyright (c) 2024 George Abrahams.
+%  - https://github.com/WD40andTape/
+%  - https://www.linkedin.com/in/georgeabrahams/
+%  - https://scholar.google.com/citations?user=T_xxZLwAAAAJ
 
 PROJECTION_MATRIX = ProjectionMatrix( deg2rad( 70 ), 1, 0.1 );
 IMAGE_SIZE = [ 300, 300 ];

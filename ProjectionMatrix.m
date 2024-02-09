@@ -37,7 +37,19 @@ classdef ProjectionMatrix < double
 %       For detailed documentation, use the command:
 %           <a href="matlab: doc ProjectionMatrix.decompose"
 %               >doc ProjectionMatrix.decompose</a>
-%
+% 
+% EXAMPLE: Please see the file 'example.m'.
+% 
+% Created in 2022b. Compatible with 2022a and later. Compatible with all 
+%  platforms. Please cite George Abrahams 
+%  https://github.com/WD40andTape/MatlabRenderer.
+
+% Published under MIT License (see LICENSE.txt).
+% Copyright (c) 2024 George Abrahams.
+%  - https://github.com/WD40andTape/
+%  - https://www.linkedin.com/in/georgeabrahams/
+%  - https://scholar.google.com/citations?user=T_xxZLwAAAAJ
+
     methods(Access=public)
         function obj = ProjectionMatrix( varargin )
             %PROJECTIONMATRIX Build a camera projection matrix.

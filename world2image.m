@@ -65,9 +65,20 @@ function [ vertices, connectivity, ids ] = ...
 %                  created by splitting existing triangles during clipping 
 %                  will share the original ID.
 % 
-% Please note that world2image depends on the function, clip, which is 
-% stored in a seperate MATLAB file.
+% EXAMPLE: Please see the file 'example.m'.
 % 
+% Please note that world2image depends on the functions, clip and 
+% mustHaveFields, which are stored in seperate MATLAB files. Created in 
+% 2022b. Compatible with 2020b and later. Compatible with all platforms. 
+% Please cite George Abrahams: 
+% https://github.com/WD40andTape/MatlabRenderer.
+
+% Published under MIT License (see LICENSE.txt).
+% Copyright (c) 2024 George Abrahams.
+%  - https://github.com/WD40andTape/
+%  - https://www.linkedin.com/in/georgeabrahams/
+%  - https://scholar.google.com/citations?user=T_xxZLwAAAAJ
+
     arguments
         Cam (1,1) { mustHaveFields( Cam, ...
             [ "projectionMatrix", "imageSize", "t", "R" ] ) }

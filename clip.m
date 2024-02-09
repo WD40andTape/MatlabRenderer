@@ -33,7 +33,17 @@ function [ vertices, connectivity, ids ] = clip( vertices, connectivity )
 %                  primitives will be removed. The IDs of new triangles 
 %                  created by splitting existing triangles will share the 
 %                  original ID.
-%
+% 
+% Created in 2022b. Compatible with 2019b and later. Compatible with all 
+%  platforms. Please cite George Abrahams 
+%  https://github.com/WD40andTape/MatlabRenderer.
+
+% Published under MIT License (see LICENSE.txt).
+% Copyright (c) 2024 George Abrahams.
+%  - https://github.com/WD40andTape/
+%  - https://www.linkedin.com/in/georgeabrahams/
+%  - https://scholar.google.com/citations?user=T_xxZLwAAAAJ
+
     arguments
         vertices (:,4) { mustBeNonempty, mustBeNumeric, mustBeReal, ...
             mustBeNonNan, mustBeFinite }

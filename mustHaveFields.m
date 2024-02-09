@@ -9,6 +9,16 @@ function mustHaveFields( a, fields )
 %   fields   Required fields of a. String scalar, character vector, string 
 %             array, or cell array of character vectors.
 % 
+% Created in 2022b. Compatible with 2020b and later. Compatible with all 
+%  platforms. Please cite George Abrahams 
+%  https://github.com/WD40andTape/MatlabRenderer.
+
+% Published under MIT License (see LICENSE.txt).
+% Copyright (c) 2024 George Abrahams.
+%  - https://github.com/WD40andTape/
+%  - https://www.linkedin.com/in/georgeabrahams/
+%  - https://scholar.google.com/citations?user=T_xxZLwAAAAJ
+
     arguments
         a (1,1)
         fields { mustBeText }

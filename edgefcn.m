@@ -41,7 +41,17 @@ function [ inside, barycentric ] = edgefcn( vertices, faces, points )
 % Be aware that no top-left rule for rendering overlapping edges is 
 % implemented. This can cause a dark edge to appear at the border between 
 % semi-transparent faces.
-%
+% 
+% Created in 2022b. Compatible with 2007a and later. Compatible with all 
+%  platforms. Please cite George Abrahams 
+%  https://github.com/WD40andTape/MatlabRenderer.
+
+% Published under MIT License (see LICENSE.txt).
+% Copyright (c) 2024 George Abrahams.
+%  - https://github.com/WD40andTape/
+%  - https://www.linkedin.com/in/georgeabrahams/
+%  - https://scholar.google.com/citations?user=T_xxZLwAAAAJ
+
     assert( size( faces, 1 ) == 1 || size( points, 1 ) == 1, ...
         "edgefcn supports testing many points against one face OR " + ...
         "one point against many faces. Testing of many points " + ...

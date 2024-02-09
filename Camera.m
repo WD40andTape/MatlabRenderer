@@ -50,6 +50,19 @@ classdef Camera < handle
 %           <a href="matlab: doc Camera.setview"
 %               >doc Camera.setview</a>
 %
+% EXAMPLE: Please see the file 'example.m'.
+% 
+% Please note that Camera depends on the functions, mustHaveFields and 
+% raycast, which are stored in seperate MATLAB files. Created in 2022b. 
+% Compatible with 2021a and later. Compatible with all platforms. Please 
+% cite George Abrahams: https://github.com/WD40andTape/MatlabRenderer.
+
+% Published under MIT License (see LICENSE.txt).
+% Copyright (c) 2024 George Abrahams.
+%  - https://github.com/WD40andTape/
+%  - https://www.linkedin.com/in/georgeabrahams/
+%  - https://scholar.google.com/citations?user=T_xxZLwAAAAJ
+
     properties(Access=public)
         % projectionMatrix - Used for rendering
         %

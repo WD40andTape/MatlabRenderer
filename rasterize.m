@@ -45,9 +45,19 @@ function [ I, depth ] = rasterize( imageSize, vertices, faces, faceCData )
 %                resolution of depth is the same as I, and is determined by 
 %                the imageSize input.
 % 
-% Please note that rasterize depends on the function, edgefcn, which is 
-% stored in a seperate MATLAB file.
+% EXAMPLE: Please see the file 'example.m'.
 % 
+% Please note that rasterize depends on the function, edgefcn, which is 
+% stored in a seperate MATLAB file. Created in 2022b. Compatible with 2021a 
+% and later. Compatible with all platforms. Please cite George Abrahams 
+%  https://github.com/WD40andTape/MatlabRenderer.
+
+% Published under MIT License (see LICENSE.txt).
+% Copyright (c) 2024 George Abrahams.
+%  - https://github.com/WD40andTape/
+%  - https://www.linkedin.com/in/georgeabrahams/
+%  - https://scholar.google.com/citations?user=T_xxZLwAAAAJ
+
     arguments
         imageSize (1,2) { mustBeInteger, mustBePositive }
         vertices (:,3) { mustBeNumeric, mustBeReal, mustBeNonNan, ...
