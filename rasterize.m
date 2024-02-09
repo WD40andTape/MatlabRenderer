@@ -64,7 +64,7 @@ function [ I, depth ] = rasterize( imageSize, vertices, faces, faceCData )
             mustBeFinite }
         faces (:,3) { mustBeInteger }
         faceCData { processcolors( faceCData, faces ) } = ...
-            1 : size( faces, 1 )
+            ( 1 : size( faces, 1 ) )'
     end
     faceCData = processcolors( faceCData, faces );
     if isfloat( faceCData )
