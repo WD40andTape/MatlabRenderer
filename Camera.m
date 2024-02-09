@@ -124,7 +124,7 @@ classdef Camera < handle
             [ "camera", "frame", "fov" ] ) } = struct( "camera", ...
             gobjects(0,1), "frame", gobjects(0,6), "fov", gobjects(0,1) )
     end
-    methods(Access=public)
+    methods
         function obj = Camera( projectionMatrix, imageSize, t, R )
             %CAMERA Set and validate Camera properties.
             %
