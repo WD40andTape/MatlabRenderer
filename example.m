@@ -101,10 +101,11 @@ function [ f, ax, h ] = setupfig( Cam, faces, vertices )
         "YLim", [ 1 Cam.imageSize(2) ]  )
     
     % Map the faces' indexed colors to random true colors via the colormap.
-    rng( 6 )
-    set( ax([ 1 2 4 ]), ...
-        "Colormap", datasample( colorcube, size( faces, 1 ), 1 ), ...
-        "CLim", [ 1 size( faces, 1 ) ] )
+    rng( 1 )
+    colors = colorcube( size( faces, 1 ) );
+    colors = colors( randperm( size( colors, 1 ) ), : );
+    colors(1,:) = [ 0, 0, 0 ];
+    set( ax([1 2 4]), "Colormap", colors, "CLim", [ 1 size( faces, 1 ) ] )
 end
 
 function vertices = image2world( Cam, vertices )
