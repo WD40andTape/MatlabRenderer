@@ -1,8 +1,8 @@
 # *3D Rendering Toolbox*: Color images and depth maps from 3D meshes
 
 [![View on GitHub](https://img.shields.io/badge/GitHub-Repository-171515)](https://github.com/WD40andTape/MatlabRenderer)
-<!--[![View on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)]()-->
-<!--[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)]()-->
+[![View on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://mathworks.com/matlabcentral/fileexchange/159386-3d-rendering-toolbox-color-image-and-depth-map-from-mesh)
+[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/fileexchange/v1?id=159386&file=example.m)
 
 Implementation of the computer graphics pipeline for triangulated meshes, in addition to a number of camera plotting functions.
 
