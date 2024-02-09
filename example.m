@@ -13,7 +13,7 @@ Cam = Camera( PROJECTION_MATRIX, IMAGE_SIZE, ...
 % Set up figure (f), axes (ax), and plots (h).
 [ f, ax, h ] = setupfig( Cam, faces, vertices );
 
-stepRotation = makehgtform( 'xrotate', 0.03, 'zrotate', 0.03 );
+stepRotation = makehgtform( xrotate=0.03, zrotate=0.03 );
 stepRotation = stepRotation(1:3,1:3);
 while isgraphics( f )
     % Rotate (orbit) the camera by a small amount around the origin.
@@ -37,9 +37,9 @@ while isgraphics( f )
     % Update the axes.
     set( h(2), "Faces", facesImg, "Vertices", verticesClipped, ...
             "FaceVertexCData", idsImg' )
-    set( h(3), 'Faces', facesImg, 'Vertices', verticesImg(:,1:2) )
-    set( h(4), 'CData', I )
-    set( h(5), 'CData', depthMap )
+    set( h(3), "Faces", facesImg, "Vertices", verticesImg(:,1:2) )
+    set( h(4), "CData", I )
+    set( h(5), "CData", depthMap )
     drawnow
 end
 
