@@ -22,7 +22,7 @@ The codebase is compact, extensively documented, and uses only MATLAB built-in f
 | `clip` | Clip faces, edges, vertices in the clip space of the graphics pipeline. Used by `world2image`. |
 | `edgefcn` | Test whether 2D points are within triangular faces. Used by `rasterize`. |
 | `Camera` | Object for plotting a camera and storing its properties.<ul><li>*Properties*</li><ul><li>`projectionMatrix` : 4-by-4 projection matrix.</li><li>`imageSize` : Camera resolution, `[width height]`.</li><li>`t` : Camera translation, `[x y z]`.</li><li>`R` : 3-by-3 camera rotation matrix.</li><li>`plotHandles` : Graphics handles.</li></ul><li>*Methods*</li><ul><li>`Constructor` : Set and validate Camera properties.</li><li>`plotcamera` : Plot a mesh representing the camera.</li><li>`plotframe` : Plot the camera's Cartesian coordinate system.</li><li>`plotfov` : Plot a mesh representing the camera's field-of-view.</li><li>`setview` : Set the MATLAB axes' view to match the Camera object.</li></ul></ul> |
-| `ProjectionMatrix` | Build, store, and modify a camera projection matrix.<ul><li>*Value* : 4-by-4 projection matrix.</li><li>*Methods*</li><ul><li>`Constructor` : Build a camera projection matrix, either with the camera's field-of-view and aspect ratio, or by defining the frustum coordinates directly.</li><li>`decompose` : Extract properties of the camera's view frustum.</li></ul></ul> |
+| `ProjectionMatrix` | Build, store, and modify a camera projection matrix.<ul><li>*Value* : 4-by-4 projection matrix.</li><li>*Methods*</li><ul><li>`Constructor` : Build a camera projection matrix, either with the camera's field-of-view and aspect ratio, by defining the frustum coordinates directly, or by converting from a camera intrinsic matrix.</li><li>`decompose` : Extract properties of the camera's view frustum.</li></ul></ul> |
 
 For full documentation, please see the respective MATLAB file, or use the `doc` command, e.g., `doc world2image`.
 
@@ -37,6 +37,8 @@ Please see [`example.m`](example.m), which outputs the [figure above](figure.gif
 - As the renderer runs on the CPU and uses only MATLAB code, its speed is limited. On a standard laptop, for a scene with 8000 faces and at a resolution of 300x300, I get around 12 fps. Nevertheless, for applications which don't need a high speed, having everything within MATLAB is handy.
 
 - Does not currently implement interpolated face colors (from colored vertices) or lighting.
+
+- If the user has a camera intrinsic matrix, rather than a projection matrix, e.g., when simulating a camera calibrated in MATLAB, the ProjectionMatrix class can be used to convert this to the necessary format.
 
 ## Compatibility
 

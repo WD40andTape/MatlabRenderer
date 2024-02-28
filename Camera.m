@@ -163,10 +163,10 @@ classdef Camera < handle
                 projAspectRatio = ...
                     obj.projectionMatrix(2,2) / obj.projectionMatrix(1,1);
                 imageAspectRatio = obj.imageSize(1) / obj.imageSize(2);
-                if abs( projAspectRatio - imageAspectRatio ) > 1e-4
+                if abs( projAspectRatio - imageAspectRatio ) > 0.05
                     warning( "The aspect ratio of projectionMatrix " + ...
-                        "and imageSize are not equal. The camera " + ...
-                        "image will appear stretched." )
+                        "and imageSize may not be equal. The camera " + ...
+                        "image could appear stretched." )
                 end
             end
             if nargin > 2 && ~isempty( t )

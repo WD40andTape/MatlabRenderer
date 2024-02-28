@@ -20,8 +20,8 @@ classdef ProjectionMatrix < double
 %       Build a camera projection matrix.
 % 
 %       A projection matrix can be built either with the camera's 
-%       field-of-view and aspect ratio, or by defining the frustum
-%       coordinates directly.
+%       field-of-view and aspect ratio, by defining the frustum coordinates 
+%       directly, or by converting from a camera intrinsic matrix.
 %
 %       For detailed documentation, use the command:
 %           <a href="matlab: doc ProjectionMatrix.ProjectionMatrix"
@@ -61,6 +61,8 @@ classdef ProjectionMatrix < double
             %   obj = ProjectionMatrix(fovY, aspectRatio, near, far)
             %   obj = ProjectionMatrix(left, right, bottom, top, near)
             %   obj = ProjectionMatrix(left, right, bottom, top, near, far)
+            %   obj = ProjectionMatrix(intrinsics, imageSize, near)
+            %   obj = ProjectionMatrix(intrinsics, imageSize, near, far)
             %
             % INPUTS
             %   matrix       4-by-4 projection matrix. matrix must be 
@@ -75,11 +77,16 @@ classdef ProjectionMatrix < double
             %                 negating the 3rd row, i.e., 
             %                 matrix(3,:) = -matrix(3,:).
             %   fovY         The field-of-view, in radians, in the Y 
-            %                 (vertical) direction.
-            %   aspectRatio  The aspect ratio, which establishes the 
-            %                 field-of-view in the X direction. Given as 
-            %                 the ratio of X to Y, i.e., 
-            %                 image width / height.
+            %                 (vertical) direction. Defined as the angle 
+            %                 between the pixel centers of the top and 
+            %                 bottom rows of pixels.
+            %   aspectRatio  The aspect ratio of the viewing frustum, which 
+            %                 establishes the field-of-view in the X 
+            %                 direction. Given as the ratio of X to Y, 
+            %                 i.e., frustum width / height. For a given 
+            %                 image (viewport) aspect ratio, calculate the
+            %                 aspect ratio of the frustum as follows: 
+            %                 (imageWidth - 1) / (imageHeight - 1).
             %   near         The distance from the optical center to the 
             %                 near-clipping plane, in world units, measured 
             %                 along the camera's line-of-sight (local 
@@ -107,6 +114,20 @@ classdef ProjectionMatrix < double
             %   top          Position of the top camera frustum coordinate, 
             %                 in world units. top must be greater than 
             %                 bottom.
+            %   intrinsics   3-by-3 MATLAB-style camera intrinsic matrix. 
+            %                 Must be in the form, 
+            %                 [fx s cx; 0 fy cy; 0 0 1], where cx and cy 
+            %                 are the principal point in pixels, fx and fy 
+            %                 are the focal lengths in pixels, and s is the 
+            %                 skew parameter. By MATLAB convention, the 
+            %                 upper-left pixel center has the coordinate 
+            %                 (1,1). Therefore, for a symmetrical camera, 
+            %                 cx = imageWidth / 2 + 0.5, and similarly for 
+            %                 cy. Note that projection matrices cannot 
+            %                 represent axes skew, if it exists in the 
+            %                 intrinsic matrix.
+            %   imageSize    Camera resolution. 2-element integer vector, 
+            %                 in the form [width height].
             %
             %   When ProjectionMatrix is called without any arguments, a
             %   default projection matrix is provided. The default 
@@ -121,11 +142,12 @@ classdef ProjectionMatrix < double
             if nargin == 0
                 % Use a default projection matrix.
                 data = [1 0 0 0; 0 1 0 0; 0 0 -1 -1; 0 0 -1 0];
+                far = NaN; % Do not update far plane.
             elseif nargin == 1
                 % Use the provided projection matrix.
-                ProjectionMatrix.validatematrix( varargin{1} )
-                if ~isequal( varargin{1}([3 7 12]), [0 0 -1] ) && ...
-                        isequal( varargin{1}([9 10 15]), [0 0 -1] )
+                ProjectionMatrix.validateprojection( varargin{1} )
+                if ~isequal( varargin{1}([9 10 15]), [0 0 -1] ) && ...
+                        isequal( varargin{1}([3 7 12]), [0 0 -1] )
                     warning( "Detected column-major projection " + ...
                         "matrix, when it should have been " + ...
                         "row-major. Transpose the matrix to remove " + ...
@@ -133,7 +155,8 @@ classdef ProjectionMatrix < double
                     varargin{1} = varargin{1}';
                 end
                 data = varargin{1};
-            elseif nargin == 3 || nargin == 4
+                far = NaN; % Do not update far plane.
+            elseif isscalar( varargin{1} ) && (nargin == 3 || nargin == 4)
                 % Build projection matrix from the field-of-view in the 
                 % Y direction, the aspect ratio of the image, and the Z 
                 % position of the near and optionally far frustum planes.
@@ -142,17 +165,77 @@ classdef ProjectionMatrix < double
                 end
                 ProjectionMatrix.validatecameraprops( varargin{:} )
                 [ fovY, aspectRatio, near, far ] = varargin{:};
+                % The projection matrix is derived from the following 
+                % geometric definitions:
+                %  top = tan( fovY / 2 ) * near;
+                %  bottom = -top;
+                %  right = top * aspectRatio;
+                %  left = -right;
                 data = zeros( 4 );
                 data(1,1) = 1 / (aspectRatio * tan( fovY / 2 ));
                 data(2,2) = 1 / tan( fovY / 2 );
                 data(3,4) = -1;
-                if isinf( far )
-                    data(3,3) = -1;
-                    data(4,3) = -2 * near;
-                else
-                    data(3,3) = -(far + near) / (far - near);
-                    data(4,3) = -(2 * far * near) / (far - near);
+                data(3,3) = -(far + near) / (far - near);
+                data(4,3) = -(2 * far * near) / (far - near);
+            elseif nargin == 3 || nargin == 4 % ~isscalar( varargin{1} )
+                % Convert from MATLAB-style camera intrinsic matrix.
+                if nargin == 3
+                    varargin{4} = Inf;
                 end
+                ProjectionMatrix.validateintrinsics( varargin{:} )
+                [ intrinsics, imageSize, near, far ] = varargin{:};
+                if ~isequal( intrinsics([2 3 6 9]), [0 0 0 1] ) && ...
+                        isequal( intrinsics([4 7 8 9]), [0 0 0 1] )
+                    warning( "Detected column-major intrinsic " + ...
+                        "matrix, when it should have been " + ...
+                        "row-major. Transpose the matrix to remove " + ...
+                        "this warning." )
+                    intrinsics = intrinsics';
+                end
+                focalLength = [ intrinsics(1,1), intrinsics(2,2) ];
+                principalPoint = [ intrinsics(1,3), intrinsics(2,3) ];
+                if intrinsics(1,2) ~= 0
+                    warning( "The provided intrinsic matrix " + ...
+                        "contains non-zero axes skew at element " + ...
+                        "(1,2), which cannot be represented by a " + ...
+                        "projection matrix." )
+                end
+                % For the intrinsic matrix, the ratio of the focal length 
+                % and image size (offset by the principal point), both 
+                % measured in pixels, define the boundaries of the 
+                % viewport. For the projection matrix, the position of the 
+                % near clipping-plane is equivalent to the focal length, 
+                % allowing us to derive a conversion. The viewport defined 
+                % by the intrinsic matrix is geometrically equivalent to 
+                % the planes of the viewing frustum, as follows:
+                %   left = ((-cx+1) / fx) * near;
+                %   right = ((w-cx) / fx) * near;
+                %   top = ((cy-1) / fy) * near;
+                %   bottom = ((cy-h) / fy) * near;
+                % These can therefore be used to derive the equivalent 
+                % projection matrix. Note the following details about the 
+                % geometric conversion:
+                % - The Y-axis of the image coordinates are inverted as 
+                %   compared to the camera coordinates, i.e., the 
+                %   Y-coordinate increases further down the image.
+                % - The top and left frustum planes are coincident with the 
+                %   upper-left pixel center, while the bottom and right 
+                %   frustum planes are coincident with the lower-right 
+                %   pixel center.
+                % - MATLAB convention uses a spatial coordinate system with 
+                %   the upper-left pixel center at (1,1). Therefore, for a 
+                %   symmetrical camera, the principal point is given by 
+                %   cx = imageWidth / 2 + 0.5, and similarly for cy.
+                data = zeros( 4 );
+                data(1,1) = 2 * focalLength(1) / (imageSize(1) - 1);
+                data(2,2) = 2 * focalLength(2) / (imageSize(2) - 1);
+                data(3,1) = (-2 * principalPoint(1) + imageSize(1) + 1) ...
+                    / (imageSize(1) - 1);
+                data(3,2) = (2 * principalPoint(2) - imageSize(2) - 1) ...
+                    / (imageSize(2) - 1);
+                data(3,4) = -1;
+                data(3,3) = -(far + near) / (far - near);
+                data(4,3) = -(2 * far * near) / (far - near);
             elseif nargin == 5 || nargin == 6
                 % Build projection matrix from the position of the 
                 % frustum's planes.
@@ -161,26 +244,26 @@ classdef ProjectionMatrix < double
                 end
                 ProjectionMatrix.validatefrustum( varargin{:} )
                 [ left, right, bottom, top, near, far ] = varargin{:};
-                % 
                 data = zeros( 4 );
                 data(1,1) = 2 * near / (right - left);
                 data(2,2) = 2 * near / (top - bottom);
                 data(3,1) = (right + left) / (right - left);
                 data(3,2) = (top + bottom) / (top - bottom);
                 data(3,4) = -1;
-                if isinf( far )
-                    % Alternatively, see slide 15 of: https://www.terathon.com/gdc07_lengyel.pdf
-                    data(3,3) = -1;
-                    data(4,3) = -2 * near;
-                else
-                    data(3,3) = -(far + near) / (far - near);
-                    data(4,3) = -(2 * far * near) / (far - near);
-                end
+                data(3,3) = -(far + near) / (far - near);
+                data(4,3) = -(2 * far * near) / (far - near);
             else
                 id = "ProjectionMatrix:WrongNumberOfInputs";
                 msg = "ProjectionMatrix was called with the wrong " + ...
                     "number of inputs. Please check the class syntax.";
                 throwAsCaller( MException( id, msg ) )
+            end
+            % Handle far plane at infinity.
+            if isinf( far )
+                % For an alternative method, see slide 15 of: 
+                %  https://www.terathon.com/gdc07_lengyel.pdf
+                data(3,3) = -1;
+                data(4,3) = -2 * near;
             end
             % Store data in the superclass.
             obj = obj@double( data );
@@ -211,14 +294,23 @@ classdef ProjectionMatrix < double
             %                             in world units, measured along the 
             %                             camera's line-of-sight (local 
             %                             Z-axis).
-            %               fovY         The field-of-view, in radians, 
-            %                             in the Y (vertical) direction.
             %               fovX         The field-of-view, in radians, in 
-            %                             the X (horizontal) direction.
-            %               aspectRatio  The aspect ratio of the 
-            %                             field-of-view. Given as the ratio 
+            %                             the X (horizontal) direction. 
+            %                             Defined as the angle between the 
+            %                             pixel centers of the leftmost and
+            %                             rightmost columns of pixels.
+            %               fovY         The field-of-view, in radians, 
+            %                             in the Y (vertical) direction. 
+            %                             Defined as the angle between the 
+            %                             pixel centers of the top and 
+            %                             bottom rows of pixels.
+            %               aspectRatio  The aspect ratio of the viewing 
+            %                             frustum. Given as the ratio 
             %                             of X to Y, i.e., 
-            %                             image width / height.
+            %                             frustum width / height. This will 
+            %                             almost identical to the aspect 
+            %                             ratio of the final rastered 
+            %                             image.
             %
             props.near = obj(4,3) / ( obj(3,3) - 1 );
             if obj(3,3) == -1
@@ -230,14 +322,14 @@ classdef ProjectionMatrix < double
             props.right = props.near * ( obj(3,1) + 1 ) / obj(1,1);
             props.bottom = props.near * ( obj(3,2) - 1 ) / obj(2,2);
             props.top = props.near * ( obj(3,2) + 1 ) / obj(2,2);
-            props.fovY = 2 * atan( ( obj(3,2) + 1 ) / obj(2,2) );
             props.fovX = 2 * atan( ( obj(1,3) + 1 ) / obj(1,1) );
+            props.fovY = 2 * atan( ( obj(3,2) + 1 ) / obj(2,2) );
             props.aspectRatio = obj(2,2) / obj(1,1);
         end
     end
     methods(Static,Access=private)
-        function validatematrix( data )
-            id = "ProjectionMatrix:InvalidMatrix";
+        function validateprojection( data )
+            id = "ProjectionMatrix:InvalidProjectionMatrix";
             if ~isequal( size( data ), [ 4 4 ] ) || ~isnumeric( data )
                 msg = "A projection matrix must be a 4-by-4 " + ...
                     "numeric matrix.";
@@ -273,6 +365,41 @@ classdef ProjectionMatrix < double
                 throwAsCaller( MException( id, msg ) )
             elseif fovY <= 0 || aspectRatio <= 0
                 msg = msg + "greater than 0.";
+                throwAsCaller( MException( id, msg ) )
+            end
+            ProjectionMatrix.validatefrustum( -1, 1, -1, 1, near, far )
+        end
+        function validateintrinsics( varargin )
+            [ intrinsics, imageSize, near, far ] = varargin{:};
+            id = "ProjectionMatrix:InvalidIntrinsicMatrix";
+            if ~isequal( size( intrinsics ), [ 3 3 ] ) || ...
+                    ~isnumeric( intrinsics )
+                msg = "An intrinsic matrix must be a 3-by-3 numeric " + ...
+                    "matrix.";
+                throwAsCaller( MException( id, msg ) )
+            elseif ~isreal( intrinsics ) || anynan( intrinsics ) || ...
+                    ~allfinite( intrinsics )
+                msg = "An intrinsic matrix cannot contain NaN, " + ...
+                    "Inf, or imaginary elements.";
+                throwAsCaller( MException( id, msg ) )
+            elseif ~isequal( intrinsics([2 3 6 9]), [0 0 0 1] ) && ...
+                    ~isequal( intrinsics([4 7 8 9]), [0 0 0 1] )
+                % Allow for incorrectly transposed intrinsic matrices.
+                msg = "The intrinsic matrix does not conform " + ...
+                    "to the expected format, i.e., the positions " + ...
+                    "of 0s and 1.";
+                throwAsCaller( MException( id, msg ) )
+            end
+            id = "ProjectionMatrix:InvalidImageSize";
+            if numel( imageSize ) ~= 2 || ~isnumeric( imageSize ) || ...
+                    ~all( imageSize > 0 ) || ...
+                    ~all( imageSize == floor( imageSize ) )
+                msg = "Image size must be a 2-element vector of " + ...
+                    "positive integers, in the form [width height].";
+                throwAsCaller( MException( id, msg ) )
+            elseif anynan( imageSize ) || ~allfinite( imageSize ) || ...
+                    ~isreal( imageSize )
+                msg ="Image size must be non-nan, finite, and real.";
                 throwAsCaller( MException( id, msg ) )
             end
             ProjectionMatrix.validatefrustum( -1, 1, -1, 1, near, far )

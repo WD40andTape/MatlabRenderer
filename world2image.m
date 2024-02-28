@@ -50,7 +50,8 @@ function [ vertices, connectivity, ids ] = ...
 % OUTPUTS
 %   vertices      Px3 array of vertices, where P is the number of vertices, 
 %                  and each vertex is in the form [X Y Z]. X and Y are in 
-%                  image space, i.e. measured in pixels. Z is in world 
+%                  image space, i.e., measured in pixels, where the 
+%                  upper-left pixel center is at (1,1). Z is in world 
 %                  space, i.e., the distance from the camera along the 
 %                  Z-dimension, measured in world units, and is used for 
 %                  Z-buffering during rasterization. Vertices may be added 
@@ -115,8 +116,7 @@ function [ vertices, connectivity, ids ] = ...
         clip( verticesClipSpace, connectivity );
     ids = ids(oldIds);
     % Normalize points from homogenous clip space to Cartesian NDC space.
-    % This is known as the perspective divide. The Z coordinate is kept,
-    % which is explained later.
+    % This is known as the perspective divide.
     verticesNdcSpace = verticesClipSpace(:,1:2) ./ ...
         verticesClipSpace(:,4);
     % Viewport transform from NDC to raster space. 
@@ -129,7 +129,8 @@ function [ vertices, connectivity, ids ] = ...
     verticesRasterSpace = verticesRasterSpace + 1;
     % Add the Z-coordinate to the vertex. This is used for rasterization
     % to decide which face is closest to the camera and therefore should
-    % be rendered.
+    % be rendered (z-buffering). We use the world Z-coordinates, so that 
+    % the Z-values of the rastered depth maps are in world units.
     verticesCameraSpace = ...
         verticesClipSpace * pinv( Cam.projectionMatrix );
     vertices = verticesRasterSpace;
