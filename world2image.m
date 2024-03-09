@@ -17,7 +17,8 @@ function [ vertices, connectivity, ids ] = ...
 %                                        points are represented by row 
 %                                        vectors and projected points are 
 %                                        given by pre-multiplication, i.e., 
-%                                        points * matrix.
+%                                        points * matrix. Can be either
+%                                        orthographic or perspective.
 %                   - imageSize         Camera resolution given as a 
 %                                        2-element integer vector, in the 
 %                                        form [width height].
@@ -89,21 +90,30 @@ function [ vertices, connectivity, ids ] = ...
             mustBe3DorLower } = ( 1 : size( vertices, 1 ) )'
     end
     ids = 1 : size( connectivity, 1 );
-    % Backface culling for triangular meshes. This removes faces whose
-    % normals are pointing away from the camera.
+    verticesCameraSpace = ( vertices - Cam.t ) * Cam.R';
+    % Backface culling for triangular meshes.
     if size( connectivity, 2 ) == 3
-        A = vertices(connectivity(:,1),:);
-        B = vertices(connectivity(:,2),:);
-        C = vertices(connectivity(:,3),:);
-        normals = cross( B - A, C - A );
-        normals = normals ./ vecnorm( normals, 2, 2 );
-        barycenters = mean( cat( 3, A, B, C ), 3 );
-        lineOfSight = barycenters - Cam.t;
-        isBackFacing = dot( normals, lineOfSight, 2 ) > 0;
+        A = verticesCameraSpace(connectivity(:,1),:);
+        B = verticesCameraSpace(connectivity(:,2),:);
+        C = verticesCameraSpace(connectivity(:,3),:);
+        if Cam.projectionMatrix(4,4) == 0
+            % Perspective projection matrix. 
+            % Remove faces whose normals are pointing away from the camera.
+            normals = cross( B - A, C - A );
+            normals = normals ./ vecnorm( normals, 2, 2 );
+            % In camera space, the camera is at [0,0,0] so the line of 
+            % sight is simply the face's barycenter.
+            lineOfSight = mean( cat( 3, A, B, C ), 3 );
+            isBackFacing = dot( normals, lineOfSight, 2 ) > 0;
+        else % Cam.projectionMatrix(4,4) == 1
+            % Orthographic projection matrix.
+            % Use the each face's winding order to determine backfaces.
+            isBackFacing = (B(:,1) - A(:,1)) .* (C(:,2) - A(:,2)) - ...
+                (C(:,1) - A(:,1)) .* (B(:,2) - A(:,2)) < 0;
+        end
         connectivity(isBackFacing,:) = [];
         ids(isBackFacing) = [];
     end
-    verticesCameraSpace = ( vertices - Cam.t ) * Cam.R';
     % Convert points from Cartesian to homogenous space.
     verticesCameraSpace = ...
         [ verticesCameraSpace, ones( size( verticesCameraSpace, 1 ), 1 ) ];
