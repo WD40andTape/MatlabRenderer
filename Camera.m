@@ -70,7 +70,7 @@ classdef Camera < handle
         % camera is aligned along the world coordinate system's negative 
         % Z-axis. Row-major order means that points are represented by row 
         % vectors and projected points are given by pre-multiplication, 
-        % i.e., points * matrix.
+        % i.e., points * matrix. Can be either orthographic or perspective.
         %
         projectionMatrix (4,4) { mustBeFloat }
         
@@ -365,7 +365,13 @@ classdef Camera < handle
                     "which was not found on the search path." )
                 return
             end
-            faces = [ 1 2 3; 1 3 4; 1 4 5; 1 5 2 ];
+            if obj.projectionMatrix(4,4) == 0
+                % Perspective projection matrix.
+                faces = [ 1 2 3; 1 3 4; 1 4 5; 1 5 2 ];
+            else % obj.projectionMatrix(4,4) == 1
+                % Orthographic projection matrix.
+                faces = [ 1 2 3 4; 1 5 8 4; 1 5 6 2; 2 6 7 3; 3 7 8 4 ];
+            end
             h = patch( ax, Faces=faces, Vertices=[], ...
                 FaceColor=[0 0 0], FaceAlpha=0.1, FaceLighting="none" );
             h.UserData = dist; % Used in obj.updatefov .
@@ -398,22 +404,37 @@ classdef Camera < handle
             % to the render in image space according to image resolution. 
             % This is instead controlled by the axes limits in world space. 
             % MATLAB will therefore render objects outside of the camera's 
-            % field-of-view. Furthermore, MATLAB's camera does explicitly 
-            % have a near-clipping plane, objects closer than which are not 
-            % rendered with a projection matrix.
+            % field-of-view. Furthermore, MATLAB's camera does not 
+            % explicitly have a near-clipping plane, objects closer than 
+            % which are not rendered with a projection matrix.
             %
             arguments
                 obj
                 ax { Camera.mustBeAxes }
             end
-            fovY = 2 * atand( ( obj.projectionMatrix(3,2) + 1 ) / ...
-                obj.projectionMatrix(2,2) );
-            set( ax, "DataAspectRatio", [1 1 1], ...
-                     "Projection", "perspective", ...
-                     "CameraViewAngle", fovY, ...
-                     "CameraPosition", obj.t, ...
-                     "CameraTarget", obj.t - obj.R(3,:), ...
-                     "CameraUpVector", obj.R(2,:) )
+            if obj.projectionMatrix(4,4) == 0
+                % Perspective projection matrix. 
+                fovY = 2 * atand( ( obj.projectionMatrix(3,2) + 1 ) / ...
+                    obj.projectionMatrix(2,2) );
+                set( ax, "DataAspectRatio", [1 1 1], ...
+                         "Projection", "perspective", ...
+                         "CameraViewAngle", fovY, ...
+                         "CameraPosition", obj.t, ...
+                         "CameraTarget", obj.t - obj.R(3,:), ...
+                         "CameraUpVector", obj.R(2,:) )
+            else % obj.projectionMatrix(4,4) == 1
+                % Orthographic projection matrix.
+                % See https://uk.mathworks.com/help/matlab/creating_plots/understanding-view-projections.html
+                top = ( 1 - obj.projectionMatrix(4,2) ) / ...
+                    obj.projectionMatrix(2,2);
+                fov = atand( top ) * 2;
+                set( ax, "DataAspectRatio", [1 1 1], ...
+                         "Projection", "orthographic", ...
+                         "CameraPosition", obj.t, ...
+                         "CameraTarget", obj.t - obj.R(3,:), ...
+                         "CameraUpVector", obj.R(2,:), ...
+                         "CameraViewAngle", fov )
+            end
         end
     end
 
@@ -485,11 +506,22 @@ classdef Camera < handle
             % edges of the field-of-view.
             cornerPixels = [ 1 1; obj.imageSize(1) 1; ...
                            obj.imageSize; 1 obj.imageSize(2) ];
-            edgeRaysNearPlane = raycast( obj, cornerPixels );
-            nearPlaneDist = obj.projectionMatrix(4,3) / ...
-                ( obj.projectionMatrix(3,3) - 1 );
-            edgeRaysFarPlane = edgeRaysNearPlane * dist / nearPlaneDist;
-            h.Vertices = [ obj.t; obj.t + edgeRaysFarPlane ];
+            if obj.projectionMatrix(4,4) == 0
+                % Perspective projection matrix.
+                directions = raycast( obj, cornerPixels, false );
+                % Raycast gives direction vectors on the near plane.
+                nearPlaneDist = obj.projectionMatrix(4,3) / ...
+                    ( obj.projectionMatrix(3,3) - 1 );
+                edgeRaysToDist = directions * dist / nearPlaneDist;
+                h.Vertices = [ obj.t; obj.t + edgeRaysToDist ];
+            else % obj.projectionMatrix(4,4) == 1
+                % Orthographic projection matrix.
+                [ directions, sources ] = ...
+                    raycast( obj, cornerPixels, true );
+                % Raycast gives direction vectors with distance 1.
+                edgeRaysToDist = directions .* dist;
+                h.Vertices = [ sources; sources + edgeRaysToDist ];
+            end
         end
     end
 

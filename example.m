@@ -12,6 +12,20 @@
 %  - https://scholar.google.com/citations?user=T_xxZLwAAAAJ
 
 PROJECTION_MATRIX = ProjectionMatrix( deg2rad( 70 ), 1, 0.1 );
+% For an orthographic projection, uncomment the following:
+% right = 2.5;
+% left = -right;
+% top = right;
+% bottom = -top;
+% near = 0.1;
+% far = 100;
+% PROJECTION_MATRIX = eye(4);
+% PROJECTION_MATRIX(1,1) = 2 / (right - left);
+% PROJECTION_MATRIX(2,2) = 2 / (top - bottom);
+% PROJECTION_MATRIX(3,3) = -2 / (far - near);
+% PROJECTION_MATRIX(4,1) = -(right + left) / (right - left);
+% PROJECTION_MATRIX(4,2) = -(top + bottom) / (top - bottom);
+% PROJECTION_MATRIX(4,3) = -(far + near) / (far - near);
 IMAGE_SIZE = [ 300, 300 ];
 START_TRANSLATION = [ 0, 2.2, 2.2 ];
 START_ROTATION = [ -1, 0, 0; 0, cosd(135), sind(135); ...
@@ -119,10 +133,22 @@ function [ f, ax, h ] = setupfig( Cam, faces, vertices )
 end
 
 function vertices = image2world( Cam, vertices )
-%IMAGE2WORLD Reverse world2image.
+%IMAGE2WORLD Reverse world2image projection.
     if ~isempty( vertices )
-        rays = raycast( Cam, vertices(:,1:2) );
-        props = Cam.projectionMatrix.decompose;
-        vertices = rays .* ( vertices(:,3) ./ props.near ) + Cam.t;
+        if Cam.projectionMatrix(4,4) == 0
+            % Perspective projection matrix.
+            directions = raycast( Cam, vertices(:,1:2), false );
+            near = Cam.projectionMatrix.decompose.near;
+            % near = Cam.projectionMatrix(4,3) / ...
+            %     ( Cam.projectionMatrix(3,3) - 1 );
+            vertices = Cam.t + directions .* ( vertices(:,3) ./ near );
+        else % Cam.projectionMatrix(4,4) == 1
+            % Orthographic projection matrix.
+            [ directions, sources ] = ...
+                raycast( Cam, vertices(:,1:2), true );
+            near = ( Cam.projectionMatrix(4,3) + 1 ) / ...
+                Cam.projectionMatrix(3,3);
+            vertices = sources + directions .* ( vertices(:,3) - near );
+        end
     end
 end
