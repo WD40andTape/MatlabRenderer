@@ -1,9 +1,11 @@
-function [ rays, pixels ] = raycast( Cam, pixels, isNormalize )
-%RAYCAST Compute ray direction from the camera to pixels.
+function [ directions, sources, pixels ] = ...
+        raycast( Cam, pixels, isNormalize )
+%RAYCAST Compute rays from the camera's optical center to its pixels.
 % 
 % SYNTAX
-%   rays = raycast( Cam, pixels )
-%   [ rays, pixels ] = raycast( Cam )
+%   [ directions, sources ] = raycast( Cam, pixels )
+%   [ directions, sources, pixels ] = raycast( Cam )
+%   [ __ ] = raycast( __ , isNormalize )
 % 
 % INPUTS
 %   Cam          Instance of the provided Camera class, or structure array 
@@ -16,7 +18,8 @@ function [ rays, pixels ] = raycast( Cam, pixels, isNormalize )
 %                                       points are represented by row 
 %                                       vectors and projected points are 
 %                                       given by pre-multiplication, i.e., 
-%                                       points * matrix.
+%                                       points * matrix. Can be either
+%                                       orthographic or perspective.
 %                  - imageSize         Camera resolution given as a 
 %                                       2-element integer vector, in the 
 %                                       form [width height].
@@ -40,16 +43,24 @@ function [ rays, pixels ] = raycast( Cam, pixels, isNormalize )
 %                 warning. Pixels containing NaN will return NaNs. By 
 %                 default, a ray will be cast to every pixel within the 
 %                 image, as defined by Cam.imageSize.
-%   isNormalize  Scalar logical, by default false. If true, each output ray 
-%                 output will have a Euclidean length of 1. If false, each 
-%                 output ray will have a length equal to the distance 
-%                 between the optical center and the pixel's position on 
-%                 the near-clipping plane.
+%   isNormalize  Scalar logical, by default false. If true, each ray 
+%                 direction output will have a Euclidean length of 1. If 
+%                 false, each ray direction will have a length such that 
+%                 `sources + directions` gives the pixel's position on the 
+%                 image plane (near-clipping plane).
 % 
 % OUTPUTS
-%   rays         Nx3 array of ray directions, where N is the number of 
+%   directions   Nx3 array of ray directions, where N is the number of 
 %                 rays, with each ray direction in the form, [X Y Z], as 
-%                 measured in the world coordinate system.
+%                 measured in the world coordinate system. The length of 
+%                 the vector depends on the isNormalize parameter.
+%   sources      Nx3 array of starting positions for the rays, where N is 
+%                 the number of rays, with each position in the form, 
+%                 [X Y Z], as measured in the world coordinate system. For 
+%                 a perspective camera, the source is the camera's position 
+%                 (optical center). For an orthographic camera, the source 
+%                 is the pixel's position on the image plane 
+%                 (near-clipping plane).
 %   pixels       Nx2 array of pixels, where N is the number of pixels, with 
 %                 each pixel in the form, [X Y], corresponding to the 
 %                 respective ray in rays. If the pixels input was 
@@ -99,11 +110,26 @@ function [ rays, pixels ] = raycast( Cam, pixels, isNormalize )
     pCamera = pClip * pinv( Cam.projectionMatrix );
     % Divide by W to convert back from homogenous to Cartesian coordinates.
     pCamera = pCamera(:,1:3) ./ pCamera(:,4);
-    % Do not translate the rays as the output is a vector direction, not 
-    % the pixel's point on the near plane.
-    rays = pCamera * Cam.R;
-    if isNormalize
-        % Normalize to a distance of 1 to form a direction vector.
-        rays = rays ./ vecnorm( rays, 2, 2 );
+    if Cam.projectionMatrix(4,4) == 0
+        % Perspective projection matrix.
+        directions = pCamera * Cam.R;
+        sources = ones( nPixels, 3 ) .* Cam.t;
+        if isNormalize
+            % Normalize direction vector to a distance of 1.
+            directions = directions ./ vecnorm( directions, 2, 2 );
+        end
+    else % Cam.projectionMatrix(4,4) == 1
+        % Orthographic projection matrix.
+        % The ray direction for all pixels is the negated camera's Z-axis.
+        directions = ones( nPixels, 3 ) .* -Cam.R(3,:);
+        sources = pCamera * Cam.R + Cam.t;
+        % Ray directions are already normalized. If non-normalized output 
+        % is requested, set their length to the distance to the 
+        % near-clipping plane.
+        if ~isNormalize
+            near = ( Cam.projectionMatrix(4,3) + 1 ) / ...
+                Cam.projectionMatrix(3,3);
+            directions = directions .* near;
+        end
     end
 end
