@@ -1,5 +1,5 @@
 classdef ProjectionMatrix < double
-%PROJECTIONMATRIX Build, store, and modify a camera projection matrix.
+%PROJECTIONMATRIX Build, store, and modify a perspective projection matrix.
 %
 % VALUE
 %   The value of a ProjectionMatrix object is a 4-by-4 projection matrix. 
