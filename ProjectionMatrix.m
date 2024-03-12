@@ -78,10 +78,10 @@ classdef ProjectionMatrix < double
             %                 matrix. matrix must be row-major and 
             %                 right-handed. The camera is aligned along 
             %                 the world's negative Z-axis. The near and far 
-            %                 clip planes correspond to Z normalized device 
-            %                 coordinates of -1 and +1 respectively (the 
-            %                 OpenGL convention), as opposed to 0 and +1 
-            %                 respectively (the Direct3D convention). A 
+            %                 clip planes must correspond to Z normalized 
+            %                 device coordinates of -1 and +1 respectively 
+            %                 (OpenGL convention), as opposed to 0 and +1 
+            %                 respectively (Direct3D convention). A 
             %                 row-major perspective projection matrix will 
             %                 have 0s in elements (1,3) and (2,3). A 
             %                 row-major orthographic projection matrix will 

@@ -9,16 +9,19 @@ function [ vertices, connectivity, ids ] = ...
 % INPUTS
 %   Cam           Instance of the provided Camera class, or structure array 
 %                  containing the following fields:
-%                   - projectionMatrix  4-by-4 projection matrix. It must 
-%                                        be row-major and right-handed, 
-%                                        with the camera aligned along the 
-%                                        world coordinate system's negative 
+%                   - projectionMatrix  4-by-4 perspective or orthographic 
+%                                        projection matrix. It must be 
+%                                        row-major and right-handed, with 
+%                                        the camera aligned along the world 
+%                                        coordinate system's negative 
 %                                        Z-axis. Row-major order means that 
 %                                        points are represented by row 
 %                                        vectors and projected points are 
 %                                        given by pre-multiplication, i.e., 
-%                                        points * matrix. Can be either
-%                                        orthographic or perspective.
+%                                        points * matrix. The near and far 
+%                                        clip planes must correspond to Z 
+%                                        normalized device coordinates of 
+%                                        -1 and +1 respectively.
 %                   - imageSize         Camera resolution given as a 
 %                                        2-element integer vector, in the 
 %                                        form [width height].

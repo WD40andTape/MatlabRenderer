@@ -66,11 +66,13 @@ classdef Camera < handle
     properties(Access=public)
         % projectionMatrix - Used for rendering
         %
-        % 4-by-4 projection matrix. It is row-major, right-handed, and the 
-        % camera is aligned along the world coordinate system's negative 
-        % Z-axis. Row-major order means that points are represented by row 
-        % vectors and projected points are given by pre-multiplication, 
-        % i.e., points * matrix. Can be either orthographic or perspective.
+        % 4-by-4 perspective or orthographic projection matrix. It is 
+        % row-major, right-handed, and the camera is aligned along the 
+        % world coordinate system's negative Z-axis. Row-major order means 
+        % that points are represented by row vectors and projected points 
+        % are given by pre-multiplication, i.e., points * matrix. The near 
+        % and far clip planes correspond to Z normalized device coordinates 
+        % of -1 and +1 respectively.
         %
         projectionMatrix (4,4) { mustBeFloat }
         
