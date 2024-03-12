@@ -12,20 +12,9 @@
 %  - https://scholar.google.com/citations?user=T_xxZLwAAAAJ
 
 PROJECTION_MATRIX = ProjectionMatrix( deg2rad( 70 ), 1, 0.1 );
-% For an orthographic projection, uncomment the following:
-% right = 2.5;
-% left = -right;
-% top = right;
-% bottom = -top;
-% near = 0.1;
-% far = 100;
-% PROJECTION_MATRIX = eye(4);
-% PROJECTION_MATRIX(1,1) = 2 / (right - left);
-% PROJECTION_MATRIX(2,2) = 2 / (top - bottom);
-% PROJECTION_MATRIX(3,3) = -2 / (far - near);
-% PROJECTION_MATRIX(4,1) = -(right + left) / (right - left);
-% PROJECTION_MATRIX(4,2) = -(top + bottom) / (top - bottom);
-% PROJECTION_MATRIX(4,3) = -(far + near) / (far - near);
+% For an orthographic projection instead, uncomment the following:
+% PROJECTION_MATRIX = ProjectionMatrix( -2.5, 2.5, -2.5, 2.5, 0.1, 100, ...
+%     "orthographic" );
 IMAGE_SIZE = [ 300, 300 ];
 START_TRANSLATION = [ 0, 2.2, 2.2 ];
 START_ROTATION = [ -1, 0, 0; 0, cosd(135), sind(135); ...
