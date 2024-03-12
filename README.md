@@ -7,6 +7,7 @@
 Implementation of the computer graphics pipeline for triangulated meshes, in addition to a number of camera plotting functions. Handles both perspective and orthographic projection.
 
 A notable use case is to simulate RGB or Kinect (depth) camera images for computer vision applications.
+
 <img src="figure.gif" width="600px">
 
 The codebase is compact, extensively documented, and uses only MATLAB built-in functions.
